@@ -1,10 +1,4 @@
-#summary One-sentence summary of this page.
+= Handy Resource =
 
-= Introduction =
-
-Resource:
-
-
-= Details =
-
-*Under Construction*
+OpenGL RedBook
+[http://www.opengl.org/documentation/red_book/]
