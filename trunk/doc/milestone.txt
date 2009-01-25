@@ -1,0 +1,19 @@
+1) Preparation    ~ 1 week     check point: 31/1
+1.1) Theory of Planar Reflection
+1.2) Theory of Shadow Volume
+1.3) OpenGL essential
+
+2) Coding          ~ 1.5 weeks check point 10/2
+2.1) OpenGL framework for win32 & Linux 
+2.2) Camera creation & movement            
+2.3) Scene creation/loading (so that we can have sth like a room to reflect, e.g. the snowman in below tutorial)   
+2.4) Texture loading                                 
+2.5) Planar Reflective texture                   
+2.6) Shadow Volume                              
+2.7) Simple Control & UI (optional)          
+
+3) Debug               ~ 3 days  check point 15/2
+
+4) Report               ~ 3 days  check point 18/2
+
+Feel free to change and discuss
