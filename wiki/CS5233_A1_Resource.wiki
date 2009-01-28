@@ -16,3 +16,5 @@ Assignment 1 Res
 [http://en.wikipedia.org/wiki/Queueing_theory#cite_note-flood-3 wiki]
 
 [http://www.calstatela.edu/faculty/hwarren/a503/queuingt.htm M/M/s]
+
+[http://www.win.tue.nl/~iadan/blockq/h3.pdf M/M/1 Input Output Characterisation]
