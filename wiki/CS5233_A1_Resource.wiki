@@ -1,0 +1,18 @@
+#summary One-sentence summary of this page.
+
+= Introduction =
+Assignment 1 Res
+
+
+= Details =
+*Queuing Theroy*
+
+[http://staff.um.edu.mt/jskl1/simweb/mm1.htm M/M/1]
+
+[http://www.dcs.ed.ac.uk/home/jeh/Simjava/queueing/mm1_q/mm1_q.html M/M/1 Simulation]
+
+[http://www.eventhelix.com/realtimemantra/CongestionControl/m_m_1_queue.htm M/M/1]
+
+[http://en.wikipedia.org/wiki/Queueing_theory#cite_note-flood-3 wiki]
+
+[http://www.calstatela.edu/faculty/hwarren/a503/queuingt.htm M/M/s]
