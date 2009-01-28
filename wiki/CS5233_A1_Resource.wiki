@@ -18,3 +18,5 @@ Assignment 1 Res
 [http://www.calstatela.edu/faculty/hwarren/a503/queuingt.htm M/M/s]
 
 [http://www.win.tue.nl/~iadan/blockq/h3.pdf M/M/1 Input Output Characterisation]
+
+[http://www.win.tue.nl/~iadan/blockq/ Block Queueing Theory and Simulation]
