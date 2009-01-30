@@ -16,3 +16,6 @@ Research Topic Reference
 
 = OS project =
 [http://tunes.org/Review/OSes.html OS project list]
+
+= Conference =
+[http://www.cs.utah.edu/~lepreau/osdi/index.html 1994 OS Conference @ Utah]
