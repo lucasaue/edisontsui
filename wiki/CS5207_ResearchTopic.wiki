@@ -19,3 +19,6 @@ Research Topic Reference
 
 = Conference =
 [http://www.cs.utah.edu/~lepreau/osdi/index.html 1994 OS Conference @ Utah]
+
+= Group =
+[http://www.opengroup.org/platform/single_unix_specification/ Unix Spec Group]
