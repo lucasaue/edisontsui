@@ -5,7 +5,7 @@
 Research Topic Reference
 
 
-= Details =
+= Course Material =
 [http://www.eecs.harvard.edu/cs261/ HARVARD course]
 
 [http://www.research.rutgers.edu/~muralir/cs671-spring99/seminar99.html Rutger course]
