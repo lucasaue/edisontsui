@@ -13,3 +13,6 @@ Research Topic Reference
 [http://www.cs.berkeley.edu/~brewer/cs262/ berkeley course]
 
 [http://tcos.org/ IEEE Technical Committee OS]
+
+= OS project =
+[http://tunes.org/Review/OSes.html OS project list]
