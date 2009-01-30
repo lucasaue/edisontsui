@@ -6,4 +6,8 @@ Research Topic Reference
 
 
 = Details =
+[http://www.eecs.harvard.edu/cs261/ HARVARD course]
 
+[http://www.research.rutgers.edu/~muralir/cs671-spring99/seminar99.html Rutger course]
+
+[http://www.cs.berkeley.edu/~brewer/cs262/ berkeley course]
