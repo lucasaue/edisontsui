@@ -11,3 +11,5 @@ Research Topic Reference
 [http://www.research.rutgers.edu/~muralir/cs671-spring99/seminar99.html Rutger course]
 
 [http://www.cs.berkeley.edu/~brewer/cs262/ berkeley course]
+
+[http://tcos.org/ IEEE Technical Committee OS]
