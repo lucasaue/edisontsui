@@ -1,4 +1,4 @@
-#summary One-sentence summary of this page.
+#summary Simulation Assignment 1 Resource (Queuing Theory)
 
 = Introduction =
 Assignment 1 Res
