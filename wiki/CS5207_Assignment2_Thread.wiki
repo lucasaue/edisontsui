@@ -11,3 +11,5 @@
 [http://en.wikipedia.org/wiki/Native_POSIX_Thread_Library NPTL wiki]
 
 [http://en.wikipedia.org/wiki/POSIX_Threads POSIX Thread standard]
+
+[http://www.humanfactor.com/pthreads/posix-threads.html More on POSIX Thread Standard]
