@@ -13,3 +13,5 @@
 [http://en.wikipedia.org/wiki/POSIX_Threads POSIX Thread standard]
 
 [http://www.humanfactor.com/pthreads/posix-threads.html More on POSIX Thread Standard]
+
+[http://www.linfo.org/context_switch.html Linux Info]
