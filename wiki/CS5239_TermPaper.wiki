@@ -5,6 +5,17 @@
 Add your content here.
 
 
-= Details =
+= Core =
 [http://www.codinghorror.com/blog/archives/000714.html Virtualization IO issue]
+
 [http://www.vmware.com/overview/performance/ VM ware performance Guide]
+
+[http://www.hpl.hp.com/techreports/2005/HPL-2005-187.pdf XenMon]
+
+[http://www.usenix.org/event/usenix05/tech/general/full_papers/short_papers/cherkasova/cherkasova.pdf Xen CPU overhead]
+
+[http://www.springerlink.com/content/24pu8407v9881101/ Xen Perf]
+
+= Related =
+
+[http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.5.9887 Art of Xen]
