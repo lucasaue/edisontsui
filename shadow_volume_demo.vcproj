@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="8.00"
-	Name="basic_glut"
-	ProjectGUID="{C606F63D-4556-4643-90D6-A1930BB46EDD}"
-	RootNamespace="basic_glut"
+	Name="shadow_volume_demo"
+	ProjectGUID="{C935F0C8-B1FE-42BB-A0E6-9AEB39818836}"
+	RootNamespace="redbook_basic_ch2"
 	Keyword="Win32Proj"
 	>
 	<Platforms>
@@ -19,7 +19,7 @@
 			Name="Debug|Win32"
 			ConfigurationType="1"
 			InheritedPropertySheets=".\openglproperty_debug.vsprops"
-			CharacterSet="2"
+			CharacterSet="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -59,11 +59,11 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="opengl32.lib glu32.lib glaux.lib odbc32.lib odbccp32.lib"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
+				GenerateMapFile="true"
+				MapExports="true"
 				SubSystem="1"
-				EntryPointSymbol="mainCRTStartup"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -175,11 +175,19 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\src\main.cpp"
+				RelativePath=".\src\main.c"
 				>
 			</File>
 			<File
-				RelativePath=".\src\teststencil.cpp"
+				RelativePath=".\src\my_endian.c"
+				>
+			</File>
+			<File
+				RelativePath=".\src\pcx.c"
+				>
+			</File>
+			<File
+				RelativePath=".\src\scene.c"
 				>
 			</File>
 		</Filter>
@@ -188,6 +196,10 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
+			<File
+				RelativePath=".\src\my_endian.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
