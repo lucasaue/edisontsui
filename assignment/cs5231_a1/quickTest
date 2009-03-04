@@ -1,0 +1,18 @@
+echo "Q1: file generation start"
+date
+./blackbox -m g -k 6 > q1Timing.txt;
+echo "file generated, start cracking"
+date
+./blackbox -m c -k 4 -t 0.1 -f q1Timing.txt -d 16 > q1Result.txt
+echo "done Q1"
+date
+echo "Q2 start cracking"
+date
+./blackbox -m c -k 10 -f timings.txt -t 0.1 -d 16 > q2Result.txt
+echo "done Q2"
+date
+echo "Q3: start"
+date
+./blackbox -m c -k 20 -f timings1Part3.txt -t 0.1 -d 16 > q3Result.txt
+echo "done Q3"
+date
