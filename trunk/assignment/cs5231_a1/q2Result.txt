@@ -1,0 +1,51 @@
+Iteration: 0, keyVal:1, correlation:0.197689
+cov: 58.712859, 
+    T: sd: 19.756063, mean: 2374.749375, 
+    M: sd: 15.033179, mean: 96.433717
+key accepted, ref: 0.1
+Iteration: 1, keyVal:3, correlation:0.228678
+cov: 60.631727, 
+    T: sd: 19.756063, mean: 2374.749375, 
+    M: sd: 13.420693, mean: 463.351676
+key accepted, ref: 0.197689
+Iteration: 2, keyVal:7, correlation:0.19521
+cov: 101.932674, 
+    T: sd: 19.756063, mean: 2374.749375, 
+    M: sd: 26.430806, mean: 831.386193
+key accepted, ref: 0.228678
+Iteration: 3, keyVal:15, correlation:0.176251
+cov: 84.147867, 
+    T: sd: 19.756063, mean: 2374.749375, 
+    M: sd: 24.166420, mean: 1182.150575
+key accepted, ref: 0.19521
+Iteration: 4, keyVal:31, correlation:0.157977
+cov: 75.312571, 
+    T: sd: 19.756063, mean: 2374.749375, 
+    M: sd: 24.130937, mean: 1543.013007
+key accepted, ref: 0.176251
+Iteration: 5, keyVal:63, correlation:0.127734
+cov: 73.524750, 
+    T: sd: 19.756063, mean: 2374.749375, 
+    M: sd: 29.135858, mean: 1906.559780
+key accepted, ref: 0.157977
+Iteration: 6, keyVal:127, correlation:0.135438
+cov: 92.553930, 
+    T: sd: 19.756063, mean: 2374.749375, 
+    M: sd: 34.590176, mean: 2270.801901
+key accepted, ref: 0.127734
+Iteration: 7, keyVal:255, correlation:0.115746
+cov: 82.876573, 
+    T: sd: 19.756063, mean: 2374.749375, 
+    M: sd: 36.243182, mean: 2633.513757
+key accepted, ref: 0.135438
+Iteration: 8, keyVal:511, correlation:0.0941415
+cov: 74.607930, 
+    T: sd: 19.756063, mean: 2374.749375, 
+    M: sd: 40.114707, mean: 2994.314657
+key rejected, ref: 0.115746
+Iteration: 9, keyVal:767, correlation:0.0400662
+cov: 34.220266, 
+    T: sd: 19.756063, mean: 2374.749375, 
+    M: sd: 43.231935, mean: 3175.872436
+key rejected, ref: 0.115746
+Key: 255
