@@ -1,1 +1,2 @@
-./matrix_time.exe -m i -s 1000
+./matrix_time.exe -m i -s 50
+gprof matrix_time.exe gmon.out > gmonResult

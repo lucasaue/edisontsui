@@ -12,6 +12,8 @@
 #include <getopt.h>
 
 #define RETURN_ERR -1
+#define RETURN_SUCCESS 0
+
 #define MY_RAND_MAX 10	// lower random cap to avoid int overflow
 
 enum MODE
@@ -21,10 +23,9 @@ enum MODE
 };
 
 // helper
-void parseOption(int argc, char *argv[], MODE &mode, int &size, bool &debug)
+void parseOption(int argc, char *argv[], MODE &mode, unsigned int &size, bool &debug)
 {
 	int c;
-	int errflag = 0;
 	while( (c = getopt(argc, argv, "m:s:d")) != -1)
 	{
 		switch(c)
@@ -36,7 +37,9 @@ void parseOption(int argc, char *argv[], MODE &mode, int &size, bool &debug)
 				mode = MODE_FLOAT;
 			break;
 		case 's':
-			sscanf(optarg, "%d", &size);
+			int tmpsize;
+			sscanf(optarg, "%d", &tmpsize);
+			size = (unsigned int) tmpsize;
 			break;
 		case 'd':
 			debug = true;
@@ -48,7 +51,7 @@ void parseOption(int argc, char *argv[], MODE &mode, int &size, bool &debug)
 }
 
 // Int
-int initIntMatrix(int** &matrix, int size)
+int initIntMatrix(int** &matrix, unsigned int size)
 {
 	/* Allocate pointer memory for the first dimension of a matrix[][]; */
 	matrix = (int **) malloc(size * sizeof(int *));
@@ -60,7 +63,7 @@ int initIntMatrix(int** &matrix, int size)
 	}
 
 	/* Allocate integer memory for the second dimension of a matrix[][]; */
-	for(int i = 0; i < size; ++i)
+	for(unsigned int i = 0; i < size; ++i)
 	{
 		matrix[i] = (int *) malloc(size * sizeof(int));
 		if(NULL == matrix[i])
@@ -71,9 +74,10 @@ int initIntMatrix(int** &matrix, int size)
 			return RETURN_ERR;
 		}
 	}
+	return RETURN_SUCCESS;
 }
 
-void randIntMatrix(int **matrix, int size)
+void randIntMatrix(int **matrix, unsigned int size)
 {
 	for(unsigned int i=0;i<size; ++i)
 	{
@@ -84,7 +88,7 @@ void randIntMatrix(int **matrix, int size)
 	}
 }
 
-void printIntMatrix(int **matrix, int size)
+void printIntMatrix(int **matrix, unsigned int size)
 {
 	for(unsigned int i=0;i<size; ++i)
 	{
@@ -96,7 +100,7 @@ void printIntMatrix(int **matrix, int size)
 	}
 }
 
-int multiplyIntMatrix(int size, bool debug)
+int multiplyIntMatrix(unsigned int size, bool debug)
 {
 	clock_t startClock, endClock, diffClock;
 	time_t startTime, endTime, diffTime;
@@ -124,7 +128,7 @@ int multiplyIntMatrix(int size, bool debug)
 	int sum;
 	for(unsigned int i=0; i<size; ++i)
 	{
-		for(unsigned int j=0; j<size; ++j)
+		for(unsigned  int j=0; j<size; ++j)
 		{
 			sum = 0;
 			for(unsigned int k=0; k<size; ++k)
@@ -163,12 +167,14 @@ int multiplyIntMatrix(int size, bool debug)
 	printf ("\n"); 
 	printf ("clock : start_clock = %lu units, end_clock = %lu units\n", startClock, endClock); 
 	printf ("clock : processor time used = %.3f sec\n", (double)diffClock/CLOCKS_PER_SEC); 
+
+	return RETURN_SUCCESS;
 }
 
 
 
 // Float
-float initFloatMatrix(float** &matrix, int size)
+float initFloatMatrix(float** &matrix, unsigned int size)
 {
 	/* Allocate pointer memory for the first dimension of a matrix[][]; */
 	matrix = (float **) malloc(size * sizeof(float *));
@@ -180,7 +186,7 @@ float initFloatMatrix(float** &matrix, int size)
 	}
 
 	/* Allocate integer memory for the second dimension of a matrix[][]; */
-	for(int i = 0; i < size; ++i)
+	for(unsigned int i = 0; i < size; ++i)
 	{
 		matrix[i] = (float *) malloc(size * sizeof(float));
 		if(NULL == matrix[i])
@@ -191,9 +197,10 @@ float initFloatMatrix(float** &matrix, int size)
 			return RETURN_ERR;
 		}
 	}
+	return RETURN_SUCCESS;
 }
 
-void randFloatMatrix(float **matrix, int size)
+void randFloatMatrix(float **matrix, unsigned int size)
 {
 	for(unsigned int i=0;i<size; ++i)
 	{
@@ -204,7 +211,7 @@ void randFloatMatrix(float **matrix, int size)
 	}
 }
 
-void printFloatMatrix(float **matrix, int size)
+void printFloatMatrix(float **matrix, unsigned int size)
 {
 	for(unsigned int i=0;i<size; ++i)
 	{
@@ -216,7 +223,7 @@ void printFloatMatrix(float **matrix, int size)
 	}
 }
 
-float multiplyFloatMatrix(int size, bool debug)
+float multiplyFloatMatrix(unsigned int size, bool debug)
 {
 	clock_t startClock, endClock, diffClock;
 	time_t startTime, endTime, diffTime;
@@ -283,12 +290,14 @@ float multiplyFloatMatrix(int size, bool debug)
 	printf ("\n"); 
 	printf ("clock : start_clock = %lu units, end_clock = %lu units\n", startClock, endClock); 
 	printf ("clock : processor time used = %.3f sec\n", (double)diffClock/CLOCKS_PER_SEC); 
+	
+	return RETURN_SUCCESS;
 }
 
 int main(int argc, char *argv[])
 {
 	MODE operationMode;
-	int matrixSize;
+	unsigned int matrixSize;
 	bool debug = false;
 
 	if(argc < 5)
@@ -309,5 +318,5 @@ int main(int argc, char *argv[])
 		multiplyFloatMatrix(matrixSize, debug);	
 	}
 
-	
+	return RETURN_SUCCESS;
 }
