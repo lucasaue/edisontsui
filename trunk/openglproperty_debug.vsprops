@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="gb2312"?>
+<VisualStudioPropertySheet
+	ProjectType="Visual C++"
+	Version="8.00"
+	Name="openglproperty_debug"
+	OutputDirectory="debug"
+	IntermediateDirectory="intdir"
+	>
+	<Tool
+		Name="VCCLCompilerTool"
+		Optimization="0"
+		RuntimeLibrary="3"
+	/>
+	<Tool
+		Name="VCLinkerTool"
+		AdditionalDependencies="opengl32.lib glu32.lib glaux.lib odbc32.lib odbccp32.lib"
+		GenerateDebugInformation="true"
+		SubSystem="1"
+	/>
+</VisualStudioPropertySheet>
