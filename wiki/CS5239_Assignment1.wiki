@@ -7,3 +7,6 @@
 
 = Measurement =
 [http://www.gnu.org/software/libtool/manual/libc/Processor-And-CPU-Time.html CPU Time]
+
+= Example =
+[http://coding.derkeiler.com/Archive/C_CPP/alt.comp.lang.learn.c-cpp/2003-10/1513.html Explanation on CPU time vs wall time, C code]
