@@ -1,0 +1,9 @@
+#summary Performance measurement
+
+= Matrix Library =
+[http://www.osl.iu.edu/research/mtl/ matrix template lib]
+
+[http://www.oonumerics.org/oon/ numerical lib list]
+
+= Measurement =
+[http://www.gnu.org/software/libtool/manual/libc/Processor-And-CPU-Time.html CPU Time]
