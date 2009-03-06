@@ -10,3 +10,7 @@
 
 = Example =
 [http://coding.derkeiler.com/Archive/C_CPP/alt.comp.lang.learn.c-cpp/2003-10/1513.html Explanation on CPU time vs wall time, C code]
+
+= Matrix Multiplication =
+[http://en.wikipedia.org/wiki/Strassen_algorithm Strassen Algorithm]
+[http://delivery.acm.org/10.1145/370000/369096/a32-jacobson.pdf?key1=369096&key2=7558236321&coll=GUIDE&dl=GUIDE&CFID=24857674&CFTOKEN=82164721 Implementation Paper]
