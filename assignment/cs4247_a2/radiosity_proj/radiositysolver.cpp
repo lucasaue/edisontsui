@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include <stdarg.h>
 
 #ifdef __APPLE__
 #include <GLUT/glut.h>
@@ -37,8 +38,30 @@ static const float maxGathererQuadEdgeLength = 30.0f;
  * THE RADIOSITY ALGORITHM SHOULD TERMINATE.
  **********************************************************/
 
-static const float hemicubeSize = 2;
+#define LOG_BUF_LEN			2048
+#define CUS_LOG_LEVEL		0
+
+enum BUFFER_INDEX
+{
+	BI_TOP		= 0,
+	BI_SIDE1	= 1,
+	BI_SIDE2	= 2,
+	BI_SIDE3	= 3,
+	BI_SIDE4	= 4,
+	BI_TOTAL	= 5
+};
+
+enum LOG_LEVEL
+{
+	LL_IMPORTANT	= 0,
+	LL_MINOR		= 1
+};
+
+static const float defaultHemicubeWidth = 1;
 static const float viewFrustumFar = 10000;
+
+// Terminating Condition
+static const unsigned int maxIteration = 200;
 
 /////////////////////////////////////////////////////////////////////////////
 // CONSTANTS
@@ -68,8 +91,6 @@ static GLuint gathererQuadsDList = 0;
 // Pre-computed delta form factors lookup tables.
 static float *topDeltaFormFactors = NULL;
 static float *sideDeltaFormFactors = NULL;
-
-
 
 /////////////////////////////////////////////////////////////////////////////
 // HELPER FUNCTIONS.
@@ -172,11 +193,29 @@ static float ComputeHemicubeWidth( const QM_ShooterQuad *shooterQuad )
 	return SQRT_2 * Min3( Min2( h01, h12), h23, h30 );
 }
 
-static void RenderHemicubePixel(float center[3], float lookAt[3], float up[3], \
+/********************** CUSTOM HELPER **************************/
+static void LogInfo( const int logLevel, const char *format, ... )
+// Outputs Log Information if ENABLE_LOG flag is on
+// Log with LEVEL LT/EQ CUS_LOG_LEVEL will be printed
+{
+#ifdef ENABLE_LOG
+	if(logLevel > CUS_LOG_LEVEL)
+		return;
+
+	va_list args;
+	char buffer[LOG_BUF_LEN];
+	va_start( args, format );
+	vsprintf( buffer, format, args );
+	va_end( args );
+
+	fprintf( stdout, "LOG: %s", buffer );
+#endif		// ENABLE_LOG
+}
+
+static void RenderHemicubePixel(GLubyte *colorBuffer, float center[3], float lookAt[3], float up[3], \
 								float frustumLeft, float frustumRight, float frustumBottom, float frustumTop, float frustumNear, float frustumFar)
 	// Render Individual side
 {
-	glClearColor(0,0,0,1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glPushMatrix();
@@ -196,44 +235,128 @@ static void RenderHemicubePixel(float center[3], float lookAt[3], float up[3], \
 
 	glPopMatrix();
 
+#ifdef ENABLE_RENDERTOSCENE
 	glFlush();
+#endif		// ENABLE_RENDERTOSCENE
 
+	ReadColorBuffer(colorBuffer, true, 0, 0, winWidthHeight, winWidthHeight);
+	
+	return;
 }
-static void RenderHemicube(QM_ShooterQuad* shooter, float upVect[3])
+
+static void RenderHemicube(QM_ShooterQuad* shooter, GLubyte **colorBuffer)
 	// Render Hemicube in shooter point of view
 	// Put the texture maps to textureMap for further processing
 {
 	if(NULL == shooter)
-		return;
+		ShowFatalError(__FILE__, __LINE__, "Shooter is NULL");
 
 	float lookAtVec[3];
-	
-	// Render top Hemicube
-	VecSum(lookAtVec, shooter->centroid, shooter->normal);
-	RenderHemicubePixel(shooter->centroid, lookAtVec, upVect, -hemicubeSize/2, hemicubeSize/2, -hemicubeSize/2, hemicubeSize/2, hemicubeSize/2, viewFrustumFar);
+	float upVec[3];
+	float zeroVec[3] = {0,0,0};
 
 	// Render 4 side Hemicube
 	float tmpVec1[3], tmpVec2[3];
+	float shooterHemiCubeWidth = defaultHemicubeWidth;
 
+	GLubyte *testPtr = colorBuffer[0];
+	testPtr = colorBuffer[1];
+	testPtr = colorBuffer[4];
 	// Side 1 - view direction = centroid x normal
+	VecSum(upVec, zeroVec,  shooter->normal);					// Up = shooter's normal for 4 side
 	VecCrossProd(tmpVec1, shooter->centroid, shooter->normal);
 	VecSum(lookAtVec, shooter->centroid, tmpVec1);
-	RenderHemicubePixel(shooter->centroid, lookAtVec, upVect, -hemicubeSize/2, hemicubeSize/2, 0, hemicubeSize/2, hemicubeSize/2, viewFrustumFar);
+	RenderHemicubePixel(colorBuffer[BI_SIDE1], shooter->centroid, lookAtVec, upVec, -shooterHemiCubeWidth, shooterHemiCubeWidth, -shooterHemiCubeWidth, shooterHemiCubeWidth, shooterHemiCubeWidth, viewFrustumFar);
 
 	// Side 2 - flip previous view direction
 	VecNeg(tmpVec2, tmpVec1);
 	VecSum(lookAtVec, shooter->centroid, tmpVec2);
-	RenderHemicubePixel(shooter->centroid, lookAtVec, upVect, -hemicubeSize/2, hemicubeSize/2, 0, hemicubeSize/2, hemicubeSize/2, viewFrustumFar);
+	RenderHemicubePixel(colorBuffer[BI_SIDE2], shooter->centroid, lookAtVec, upVec, -shooterHemiCubeWidth, shooterHemiCubeWidth, -shooterHemiCubeWidth, shooterHemiCubeWidth, shooterHemiCubeWidth, viewFrustumFar);
 
 	// Side 3 - view direction = previous view direction x normal
 	VecCrossProd(tmpVec1, tmpVec2, shooter->normal);
 	VecSum(lookAtVec, shooter->centroid, tmpVec1);
-	RenderHemicubePixel(shooter->centroid, lookAtVec, upVect, -hemicubeSize/2, hemicubeSize/2, 0, hemicubeSize/2, hemicubeSize/2, viewFrustumFar);
+	RenderHemicubePixel(colorBuffer[BI_SIDE3], shooter->centroid, lookAtVec, upVec, -shooterHemiCubeWidth, shooterHemiCubeWidth, -shooterHemiCubeWidth, shooterHemiCubeWidth, shooterHemiCubeWidth, viewFrustumFar);
 
 	// Side 4 - flip previous view direction
 	VecNeg(tmpVec2, tmpVec1);
 	VecSum(lookAtVec, shooter->centroid, tmpVec2);
-	RenderHemicubePixel(shooter->centroid, lookAtVec, upVect, -hemicubeSize/2, hemicubeSize/2, 0, hemicubeSize/2, hemicubeSize/2, viewFrustumFar);
+	RenderHemicubePixel(colorBuffer[BI_SIDE4], shooter->centroid, lookAtVec, upVec, -shooterHemiCubeWidth, shooterHemiCubeWidth, -shooterHemiCubeWidth, shooterHemiCubeWidth, shooterHemiCubeWidth, viewFrustumFar);
+
+	// Render top Hemicube
+	VecSum(upVec, zeroVec, tmpVec2);							// Up is perpendicular to one side
+	VecSum(lookAtVec, shooter->centroid, shooter->normal);
+	RenderHemicubePixel(colorBuffer[BI_TOP], shooter->centroid, lookAtVec, upVec, -shooterHemiCubeWidth, shooterHemiCubeWidth, -shooterHemiCubeWidth, shooterHemiCubeWidth, shooterHemiCubeWidth, viewFrustumFar);
+}
+
+void ComputeFormFactor(float *formFactor, GLubyte **colorBuf, const unsigned int winSize)
+	// Calculate FormFactor from deltaFormFactor and colorBuf
+	// Return formFactor
+{
+	if(NULL == topDeltaFormFactors || NULL == sideDeltaFormFactors || NULL == formFactor || NULL == colorBuf)
+		ShowFatalError(__FILE__, __LINE__, "Input is NULL");
+
+	for(unsigned int i=0; i<BI_TOTAL; ++i)
+	{
+		// For buffer other than BI_TOP, only upper half is used
+		unsigned int j = (BI_TOP == i)? 0: winSize/2;
+		for(; j<winSize; ++j)
+		{
+			GLubyte rgb[3] = { colorBuf[i][3*j], colorBuf[i][3*j+1], colorBuf[i][3*j+2] };		// map it back to rgb
+			GLuint index = (unsigned int) RGBToUnsignedInt(rgb);
+
+			if(model.totalGatherers <= index)								// skip if no gather found
+				continue;
+
+			unsigned int deltaFormFactorIndex;
+			if(BI_TOP == i)
+			{
+				deltaFormFactorIndex = j;
+				formFactor[index] += topDeltaFormFactors[deltaFormFactorIndex];
+			}
+			else
+			{
+				deltaFormFactorIndex = j - winSize/2;		// j is offset to use upper half
+				formFactor[index] += sideDeltaFormFactors[deltaFormFactorIndex];
+			}
+			LogInfo( LL_MINOR, "FormFactor %d: %f\n", index, formFactor[index]);
+		}
+	}
+}
+
+static void ComputeRecvPower(float recvPower[3], const float reflectivity[3], const float formFactor, const float shooterPower[3])
+	// Computer Received Power, where recvPower = Reflectivity(k) * FormFactor(k,q) * shooterPower
+{
+	for(unsigned int i=0;i<3;++i)
+	{
+		recvPower[i] = reflectivity[i] * formFactor * shooterPower[i];
+	}
+}
+
+static void FindMaxShooter(QM_ShooterQuad **maxShooter)
+	// Find Shooter with Max Unshot Power
+{
+	float maxUnshotPower = 0;
+	int maxShooterId = -1;
+	for(unsigned int i=0; i<model.totalShooters; ++i)
+	{
+		QM_ShooterQuad *currShooter = model.shooters[i];
+
+		if(NULL == currShooter)
+			continue;
+
+		if(VecLen(currShooter->unshotPower) > maxUnshotPower)
+		{
+			*maxShooter = currShooter;
+			maxUnshotPower = VecLen((*maxShooter)->unshotPower);
+			maxShooterId =i;
+		}
+	}
+
+	if(NULL == *maxShooter)
+		ShowFatalError(__FILE__, __LINE__, "Shooter is NULL");
+
+	LogInfo( LL_IMPORTANT, "Max Power @%d : %f\n", maxShooterId, maxUnshotPower);
 }
 
 static void ComputeTopFaceDeltaFormFactors( float deltaFormFactors[], int numPixelsOnWidth )
@@ -247,16 +370,19 @@ static void ComputeTopFaceDeltaFormFactors( float deltaFormFactors[], int numPix
 	// dF = dA/(pi*(x^2 + y^2 +1 )^2
 	float x = 0;
 	float y = 0;
-	float dA = sqrt((float) 2/800);
+	float dA = pow((float) defaultHemicubeWidth*2/numPixelsOnWidth, 2);
+	float sum =0;			// Debug: check if (sumTop + 4*sumSide == 1)
 	for(unsigned int i=0; i<numPixelsOnWidth; ++i)
 	{
 		for(unsigned int j=0; j<numPixelsOnWidth; ++j)
 		{
-			x = -1 + 1.0f/800 + (float)i/400;
-			y = -1 + 1.0f/800 + (float)j/400;
-			deltaFormFactors[numPixelsOnWidth * i + j] = dA/sqrt(x*x + y*y + 1);
+			x = (-1 + 1.0f/numPixelsOnWidth + (float)i*2/numPixelsOnWidth) * defaultHemicubeWidth;			// [-1, 1]
+			y = (-1 + 1.0f/numPixelsOnWidth + (float)j*2/numPixelsOnWidth) * defaultHemicubeWidth;			// [-1, 1]
+			deltaFormFactors[numPixelsOnWidth * i + j] = dA/(M_PI*pow(x*x + y*y + 1, 2));
+			sum += deltaFormFactors[numPixelsOnWidth * i + j];
 		}
 	}
+	LogInfo( LL_IMPORTANT, "Sum of all deltaFormFactor on Top surface: %f\n", sum);
 }
 
 
@@ -271,20 +397,20 @@ static void ComputeSideFaceDeltaFormFactors( float deltaFormFactors[], int numPi
 	// dF = dA*z/(pi*(z^2 + y^2 +1 )^2
 	float z = 0;
 	float y = 0;
-	float dA = sqrt((float) 2/800);
+	float dA = pow((float) defaultHemicubeWidth*2/numPixelsOnWidth, 2);
+	float sum =0;			// Debug: check if (sumTop + 4*sumSide == 1)	
 	for(unsigned int i=0; i<numPixelsOnWidth/2; ++i)
 	{
 		for(unsigned int j=0; j<numPixelsOnWidth; ++j)
 		{
-			z = -1 + 1.0f/800 + (float)i/400;
-			y = -1 + 1.0f/800 + (float)j/400;
-			deltaFormFactors[numPixelsOnWidth * i + j] = dA * z/sqrt(z*z + y*y + 1);
+			z = (1.0f/numPixelsOnWidth + (float)i*2/numPixelsOnWidth) * defaultHemicubeWidth;				// [0 ,1]
+			y = (-1 + 1.0f/numPixelsOnWidth + (float)j*2/numPixelsOnWidth) * defaultHemicubeWidth;			// [-1, 1]
+			deltaFormFactors[numPixelsOnWidth * i + j] = dA * z/(M_PI*pow(z*z + y*y + 1, 2));
+			sum += deltaFormFactors[numPixelsOnWidth * i + j];
 		}
 	}
+	LogInfo( LL_IMPORTANT, "Sum of all deltaFormFactor on Top surface: %f\n", sum);
 }
-
-
-
 
 /////////////////////////////////////////////////////////////////////////////
 // The display callback function.
@@ -293,73 +419,76 @@ static void ComputeSideFaceDeltaFormFactors( float deltaFormFactors[], int numPi
 
 static void ComputeRadiosity( void )
 {
-	// Allocate temporary memory for reading in the colorbuffer.
-	GLubyte *colorBuf = (GLubyte *) CheckedMalloc( sizeof(GLubyte) * 3 * winWidthHeight * winWidthHeight );
+	// Allocate temporary memory for reading in the colorbuffer (change to 2D array).
+	GLubyte **colorBuf;
+	colorBuf = (GLubyte **) CheckedMalloc(BI_TOTAL * sizeof(GLubyte *));
+	unsigned int colorBufLength = winWidthHeight * winWidthHeight * sizeof(GLubyte) * 3; // RGB
+	for(unsigned int i = 0; i < BI_TOTAL; ++i) 
+	{
+		colorBuf[i] = (GLubyte *) CheckedMalloc(colorBufLength);	
+		memset(colorBuf[i], 0x0, colorBufLength);
+	}
 
 	// Allocate temporary memory for recording new RGB radiosity for each gatherer quad.
 	float *newRadiosities = (float *) CheckedMalloc( sizeof(float) * 3 * model.totalGatherers );
 
+	// Allocate temporary memory for Form Factor
+	float *formFactor = (float *) CheckedMalloc( sizeof(float) * model.totalGatherers );
+
 	int iterationCount = 0;
-
-	// To maintain a constant up vector, arbitary pick one
-	float upVector[3] = {1,1,1};
-
-	if( NULL == topDeltaFormFactors || NULL == sideDeltaFormFactors)
-		return;
 
 	while( 1 )
 	{
 		/********************** ADD HERE **************************/
 		// Find shooter with greatest unshot power (maxShooter)
 		QM_ShooterQuad *maxShooter = NULL;
-		float maxUnshotPower = 0;
-		
-		for(unsigned int i=0; i<model.totalShooters; ++i)
-		{
-			QM_ShooterQuad *currShooter = model.shooters[i];
-		
-			if(NULL == currShooter)
-				continue;
-
-			if(VecLen(currShooter->unshotPower) > maxUnshotPower)
-			{
-				maxShooter = currShooter;
-				maxUnshotPower = VecLen(maxShooter->unshotPower);
-			}
-		}
-
-		if(NULL == maxShooter)
-			break;
+		FindMaxShooter(&maxShooter);
 
 		// Render Hemicube from maxShooter point of view
-		// ToDo: RenderHemicube(QM_ShooterQuad*, float upVect[3], Texture* top, Texture* side);
-		RenderHemicube(maxShooter, upVector);
+		// colorBuf[i] is in [r,g,b,r,g,b......]
+		RenderHemicube(maxShooter, colorBuf);
 
-		return;
+		// Compute gatherer form factors by scanning colorBuffer
+		memset(formFactor, 0x0, sizeof(float) * model.totalGatherers);
+		ComputeFormFactor(formFactor, colorBuf, winWidthHeight*winWidthHeight);
 
-		// Get gatherer radiosity
+		// Shooter approach, power is shot from MaxShooter, now consider how many power gathering recv
+		for(unsigned int i=0;i<model.totalGatherers;++i)
+		{
+			QM_GathererQuad *currGatherer = model.gatherers[i];
+			if(NULL == currGatherer || maxShooter == currGatherer->shooter)	// skip as formFactor should be 0
+				continue;
 
-		// Get gatherer form factors.
+			// Update radiosity 
+			// deltaRadiosity = Reflectivity(k) * FormFactor(k,q) * U(i) / A(k, q) = recvPower / A(k,q)
+			float recvPower[3] = {0,0,0};
+			float temp[3] = {0,0,0};
+			ComputeRecvPower(recvPower, currGatherer->surface->reflectivity, formFactor[i], maxShooter->unshotPower);
+			VecScale(temp, 1 / currGatherer->area,  recvPower);
+			VecSum(currGatherer->radiosity, currGatherer->radiosity, temp);
 
-		// for each gatherer quad
-		// {
-		//		for each R,G,B component
-		//		{
-		//			- Calculate received radiosity (newRadiosity).
-		//			- Add new radiosity value to gatherer's radiosity.
-		//			- new Unshot power = newRadiosity * gatherer's area;
-		//			- Update gatherer's parent's unshot power with new
-		//				unshot power. (Gatherer's parent is a shooter)
-		//		}
-		//	}
+			// Update un-shot Power
+			// unshotPower = unshotPower + Sum(deltaRadiosity * A(k,q) = unshotPower + recvPower
+			LogInfo( LL_MINOR, "Gather %d, Power Before: %f\n", VecLen(currGatherer->shooter->unshotPower));
+			VecSum(currGatherer->shooter->unshotPower, currGatherer->shooter->unshotPower, recvPower);
+			LogInfo( LL_MINOR, "Gather %d, Power After: %f\n", VecLen(currGatherer->shooter->unshotPower));
+		}
 
-		//	Set maxShooter's unshot power to 0.
+		// Set maxShooter's unshot power to 0.
+		maxShooter->unshotPower[0] = 0;
+		maxShooter->unshotPower[1] = 0;
+		maxShooter->unshotPower[2] = 0;
 
+		// ToDo:
+		// Terminating Condition
+		if(iterationCount == maxIteration)
+			break;		
 
-
+		// Increment IterationCount
 		iterationCount++;
 	}
 	
+	free( formFactor );
 	free( colorBuf );
 	free( newRadiosities );
 	printf( "Radiosity computation completed.\n" );
