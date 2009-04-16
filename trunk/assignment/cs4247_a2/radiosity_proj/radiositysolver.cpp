@@ -60,8 +60,14 @@ enum LOG_LEVEL
 static const float defaultHemicubeWidth = 1;
 static const float viewFrustumFar = 10000;
 
+// DEBUG Flag, can move to preprocesser definition 
+//#define ENABLE_RENDERTOSCREEN
+#define ENABLE_LOG
+
 // Terminating Condition
-static const unsigned int maxIteration = 50;
+// Terminate if # iteration > maxIteration OR %TotalPowerLeft <= percentageTotalPowerLeft
+static const unsigned int maxIteration = 1000;						// max 1000 iteration
+static const float percentageTotalPowerLeft = 0.2f;		// max 20% Power left
 
 /////////////////////////////////////////////////////////////////////////////
 // CONSTANTS
@@ -214,7 +220,7 @@ static void LogInfo( const int logLevel, const char *format, ... )
 
 static void RenderHemicubePixel(GLubyte *colorBuffer, float center[3], float lookAt[3], float up[3], \
 								float frustumLeft, float frustumRight, float frustumBottom, float frustumTop, float frustumNear, float frustumFar)
-	// Render Individual side
+	// Render Individual side of Hemicube to colorBuffer
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -305,7 +311,7 @@ void ComputeFormFactor(float *formFactor, GLubyte **colorBuf, const unsigned int
 			GLubyte rgb[3] = { colorBuf[i][3*j], colorBuf[i][3*j+1], colorBuf[i][3*j+2] };		// map it back to rgb
 			GLuint index = (unsigned int) RGBToUnsignedInt(rgb);
 
-			if(model.totalGatherers <= index)								// skip if no gather found
+			if(model.totalGatherers <= index)				// skip if no gather found
 				continue;
 
 			unsigned int deltaFormFactorIndex;
@@ -382,7 +388,7 @@ static void ComputeTopFaceDeltaFormFactors( float deltaFormFactors[], int numPix
 			sum += deltaFormFactors[numPixelsOnWidth * i + j];
 		}
 	}
-	LogInfo( LL_IMPORTANT, "Sum of all deltaFormFactor on Top surface: %f\n", sum);
+	LogInfo( LL_MINOR, "Sum of all deltaFormFactor on Top surface: %f\n", sum);
 }
 
 
@@ -409,7 +415,7 @@ static void ComputeSideFaceDeltaFormFactors( float deltaFormFactors[], int numPi
 			sum += deltaFormFactors[numPixelsOnWidth * i + j];
 		}
 	}
-	LogInfo( LL_IMPORTANT, "Sum of all deltaFormFactor on Top surface: %f\n", sum);
+	LogInfo( LL_MINOR, "Sum of all deltaFormFactor on Top surface: %f\n", sum);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -438,10 +444,8 @@ static void ComputeRadiosity( void )
 	int iterationCount = 0;
 
 	// Var for computing terminating condition
-	float lastTotalPower = 0;
+	float initTotalPower = 0;
 	float currTotalPower = 0;
-	float totalRadiosity = 0;
-	float deltaRadiosity = 0;
 
 	while( 1 )
 	{
@@ -478,9 +482,6 @@ static void ComputeRadiosity( void )
 			LogInfo( LL_MINOR, "Gather %d, Power Before: %f\n", VecLen(currGatherer->shooter->unshotPower));
 			VecSum(currGatherer->shooter->unshotPower, currGatherer->shooter->unshotPower, recvPower);
 			LogInfo( LL_MINOR, "Gather %d, Power After: %f\n", VecLen(currGatherer->shooter->unshotPower));
-
-			// Terminating Condition
-			deltaRadiosity += VecLen(temp);
 		}
 
 		// Set maxShooter's unshot power to 0.
@@ -488,21 +489,24 @@ static void ComputeRadiosity( void )
 		maxShooter->unshotPower[1] = 0;
 		maxShooter->unshotPower[2] = 0;
 
-		// ToDo:
-		// Terminating Condition
+		// Compute TotalPower Left for terminating condition
+		currTotalPower = 0;
 		for(unsigned int i=0; i<model.totalShooters; ++i)
 		{
-			// Update var for computing terminating condition
 			currTotalPower += VecLen(model.shooters[i]->unshotPower);
 		}
-		LogInfo(LL_IMPORTANT, "[%d],%f,%f,%f\n", iterationCount, currTotalPower, (currTotalPower-lastTotalPower)/(lastTotalPower+0.1), deltaRadiosity/(totalRadiosity+0.1));
-		lastTotalPower = currTotalPower;
-		currTotalPower = 0;
-		totalRadiosity += deltaRadiosity;
-		deltaRadiosity =0;
 
-		if(iterationCount == maxIteration)
-			break;		
+		if(0 == iterationCount)
+			initTotalPower = currTotalPower;
+
+		LogInfo(LL_MINOR, "[%d],CurrTotalPower%f,%f,%f\n", iterationCount, currTotalPower, currTotalPower/initTotalPower);
+
+		// Terminating Condition
+		if(maxIteration <= iterationCount || percentageTotalPowerLeft >= currTotalPower/initTotalPower)
+		{
+			LogInfo(LL_IMPORTANT, "Computation End @ iteration = %d, %PowerLeft = %f\n", iterationCount, currTotalPower/initTotalPower);
+			break;
+		}
 
 		// Increment IterationCount
 		iterationCount++;

@@ -2,10 +2,28 @@
 Microsoft Visual Studio Solution File, Format Version 9.00
 # Visual Studio 2005
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "QuadsViewer", "QuadsViewer.vcproj", "{F8EFC1AC-2517-4118-81E4-EDCE5CC6B5B4}"
+	ProjectSection(WebsiteProperties) = preProject
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.Debug = "False"
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RadiositySolver", "RadiositySolver.vcproj", "{45CECE32-699B-4A3F-9B68-355F3E6A307F}"
+	ProjectSection(WebsiteProperties) = preProject
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.Debug = "False"
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RadiosityViewer", "RadiosityViewer.vcproj", "{8BD987EB-70AE-483D-846D-27E14FA5DDB9}"
+	ProjectSection(WebsiteProperties) = preProject
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.Debug = "False"
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ObjToIn", "ObjToIn.vcproj", "{E14938E6-F4D2-423B-850E-9CC85AD30CB1}"
+	ProjectSection(WebsiteProperties) = preProject
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.Debug = "False"
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -25,6 +43,10 @@ Global
 		{8BD987EB-70AE-483D-846D-27E14FA5DDB9}.Debug|Win32.Build.0 = Debug|Win32
 		{8BD987EB-70AE-483D-846D-27E14FA5DDB9}.Release|Win32.ActiveCfg = Release|Win32
 		{8BD987EB-70AE-483D-846D-27E14FA5DDB9}.Release|Win32.Build.0 = Release|Win32
+		{E14938E6-F4D2-423B-850E-9CC85AD30CB1}.Debug|Win32.ActiveCfg = Debug|Win32
+		{E14938E6-F4D2-423B-850E-9CC85AD30CB1}.Debug|Win32.Build.0 = Debug|Win32
+		{E14938E6-F4D2-423B-850E-9CC85AD30CB1}.Release|Win32.ActiveCfg = Release|Win32
+		{E14938E6-F4D2-423B-850E-9CC85AD30CB1}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
