@@ -29,7 +29,7 @@ static const char outputModelFilename[] = "cornell_box.out";
 static const float maxShooterQuadEdgeLength = 70.0f;
 
 // Threshold for subdiving the shooter quads to get gatherer quads.
-static const float maxGathererQuadEdgeLength = 30.0f;	
+static const float maxGathererQuadEdgeLength = 70.0f;	
 
 
 /**********************************************************
@@ -61,7 +61,7 @@ static const float defaultHemicubeWidth = 1;
 static const float viewFrustumFar = 10000;
 
 // Terminating Condition
-static const unsigned int maxIteration = 200;
+static const unsigned int maxIteration = 50;
 
 /////////////////////////////////////////////////////////////////////////////
 // CONSTANTS
@@ -235,7 +235,7 @@ static void RenderHemicubePixel(GLubyte *colorBuffer, float center[3], float loo
 
 	glPopMatrix();
 
-#ifdef ENABLE_RENDERTOSCENE
+#ifdef ENABLE_RENDERTOSCREEN
 	glFlush();
 #endif		// ENABLE_RENDERTOSCENE
 
@@ -356,7 +356,7 @@ static void FindMaxShooter(QM_ShooterQuad **maxShooter)
 	if(NULL == *maxShooter)
 		ShowFatalError(__FILE__, __LINE__, "Shooter is NULL");
 
-	LogInfo( LL_IMPORTANT, "Max Power @%d : %f\n", maxShooterId, maxUnshotPower);
+	LogInfo( LL_MINOR, "Max Power @%d, %f\n", maxShooterId, maxUnshotPower);
 }
 
 static void ComputeTopFaceDeltaFormFactors( float deltaFormFactors[], int numPixelsOnWidth )
@@ -437,6 +437,12 @@ static void ComputeRadiosity( void )
 
 	int iterationCount = 0;
 
+	// Var for computing terminating condition
+	float lastTotalPower = 0;
+	float currTotalPower = 0;
+	float totalRadiosity = 0;
+	float deltaRadiosity = 0;
+
 	while( 1 )
 	{
 		/********************** ADD HERE **************************/
@@ -472,6 +478,9 @@ static void ComputeRadiosity( void )
 			LogInfo( LL_MINOR, "Gather %d, Power Before: %f\n", VecLen(currGatherer->shooter->unshotPower));
 			VecSum(currGatherer->shooter->unshotPower, currGatherer->shooter->unshotPower, recvPower);
 			LogInfo( LL_MINOR, "Gather %d, Power After: %f\n", VecLen(currGatherer->shooter->unshotPower));
+
+			// Terminating Condition
+			deltaRadiosity += VecLen(temp);
 		}
 
 		// Set maxShooter's unshot power to 0.
@@ -481,6 +490,17 @@ static void ComputeRadiosity( void )
 
 		// ToDo:
 		// Terminating Condition
+		for(unsigned int i=0; i<model.totalShooters; ++i)
+		{
+			// Update var for computing terminating condition
+			currTotalPower += VecLen(model.shooters[i]->unshotPower);
+		}
+		LogInfo(LL_IMPORTANT, "[%d],%f,%f,%f\n", iterationCount, currTotalPower, (currTotalPower-lastTotalPower)/(lastTotalPower+0.1), deltaRadiosity/(totalRadiosity+0.1));
+		lastTotalPower = currTotalPower;
+		currTotalPower = 0;
+		totalRadiosity += deltaRadiosity;
+		deltaRadiosity =0;
+
 		if(iterationCount == maxIteration)
 			break;		
 
