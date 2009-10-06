@@ -1,0 +1,5 @@
+Hello Edison!! This is my 1st java program with
+i) args
+ii) FileIO
+Congrat
+Test on readline
