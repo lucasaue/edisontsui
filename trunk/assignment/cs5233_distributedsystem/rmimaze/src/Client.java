@@ -13,6 +13,8 @@ public class Client {
 		Client client 	= new Client();
 		TextInput input = new TextInput(client);
 		input.run();
+		
+		System.exit(0);
 	}
 		// ctor
 	public Client() {

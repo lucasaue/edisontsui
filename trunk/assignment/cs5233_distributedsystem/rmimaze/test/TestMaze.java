@@ -90,7 +90,7 @@ public class TestMaze extends TestCase {
 			index = y*m_mazeSize + x;
 			maze.addPlayer(m_testPlayerId[0], index);
 			// Get current location
-			Maze.Player tmpPlayer = maze.getPlayer(m_testPlayerId[0]);
+			MazeData.Player tmpPlayer = maze.getPlayer(m_testPlayerId[0]);
 			assertEquals(index, tmpPlayer.getPos());
 			// move
 			maze.move(m_testPlayerId[0], EnumDirection.NORTH);
@@ -111,7 +111,7 @@ public class TestMaze extends TestCase {
 			maze.start();
 
 			// Get current location
-			Maze.Player tmpPlayer = maze.getPlayer(m_testPlayerId[1]);
+			MazeData.Player tmpPlayer = maze.getPlayer(m_testPlayerId[1]);
 			assertEquals(index, tmpPlayer.getPos());
 			// move
 			maze.move(m_testPlayerId[1], EnumDirection.NORTH);

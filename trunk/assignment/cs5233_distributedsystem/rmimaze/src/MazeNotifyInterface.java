@@ -1,11 +1,13 @@
 
 import java.rmi.*;
 
-public interface MazeNotifyInterface {
+public interface MazeNotifyInterface extends Remote {
 
-	public void joinNotify(String msg) throws RemoteException;
-	
-	public void moveNotify(String msg) throws RemoteException;
+	public void joinSuccessNotify(String msg) throws RemoteException;
+	public void joinFailNotify(String msg) throws RemoteException;
+		
+	public void moveSuccessNotify(String msg) throws RemoteException;
+	public void moveFailNotify(String msg) throws RemoteException;
 	
 	public void quitNotify(String msg) throws RemoteException;
 	
@@ -16,7 +18,7 @@ public interface MazeNotifyInterface {
 	// What if client fail? exception? timeout?
 	public void checkAlive() throws RemoteException;
 	
-	public void synchronizeMaze() throws RemoteException;
+	public void synchronizeMaze(MazeData mazeData) throws RemoteException;
 	
 	
 }
