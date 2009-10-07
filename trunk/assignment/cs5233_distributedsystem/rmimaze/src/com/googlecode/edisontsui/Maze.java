@@ -11,6 +11,35 @@ import java.lang.Math;
 // 2) Player list (pos, treasure obtained)
 
 public class Maze {
+	public class Player {
+		
+		// ctor
+		public Player(int id) {
+			m_id = id;
+		}
+		
+		public int getId() {
+			return m_id;
+		}
+		public int getEarnTreasure() {
+			return m_earnTreasure;
+		}
+		public void addEarnTreasure(int deltaEarnTreasure) {
+			m_earnTreasure += deltaEarnTreasure;
+		}
+		public int getPos() {
+			return m_pos;
+		}
+		public void setPos(int pos) {
+			m_pos = pos;
+		}
+
+		// field
+		private int m_id 			= -1;
+		private int m_earnTreasure 	= 0;
+		private int m_pos 			= -1;
+		
+	};
 	
 	// ctor
 	public Maze(int size, int numTreasure){
@@ -37,7 +66,14 @@ public class Maze {
 		}
 	}
 	
+	public void setEndGameCallback(Runnable endGameCallback) {
+		m_endGameCallback	= endGameCallback;
+	}
 	// getter
+	public MazeStatus getStatus() {
+		return m_status;
+	}
+	
 	public int getNumPlayer() {
 		return m_playerList.size();
 	}
@@ -51,16 +87,34 @@ public class Maze {
 	}
 	
 	// method
+	public void start() throws MazeServerException {
+		if(this.getStatus() != MazeStatus.MAZE_WAITING)
+			throw new MazeServerException("Maze cannot be started");
+		m_status = MazeStatus.MAZE_STARTED;
+	}
+	
+	public void end() throws MazeServerException {
+		if(this.getStatus() != MazeStatus.MAZE_STARTED)
+			throw new MazeServerException("Maze cannot be ended");
+		m_status = MazeStatus.MAZE_END;
+	
+		if(m_endGameCallback != null)
+			m_endGameCallback.run();
+	}
+	
 	public synchronized void addPlayer(Player player) throws MazeServerException {
-		if(getPlayer(player.getId()) != null)
+		if(this.getPlayer(player.getId()) != null)
 			throw new MazeServerException("Player exist");
-		
+		if(this.getStatus() != MazeStatus.MAZE_WAITING)
+			throw new MazeServerException("Maze is closed for join");
+
 		// add to list
 		m_playerList.put(player.getId(), player);
 		// assign location
 		int randPos = player.getPos();
 		boolean init = true;
 		boolean isPosAssigned = false;
+		int numTry = 0;
 		do {
 			try {
 				if(randPos == -1 || init == false)
@@ -70,8 +124,14 @@ public class Maze {
 				}
 				enterMazeElement(player.getId(), randPos);
 				isPosAssigned = true;
+				numTry++;
 			} catch (MazeServerException e) {
 				// pos is not assigned
+				if(numTry >= m_maxPlayerInitTry)
+				{
+					isPosAssigned = true;
+					throw new MazeServerException("too many try");
+				}
 			}
 		} while (isPosAssigned == false);
 	}
@@ -90,8 +150,18 @@ public class Maze {
 	public void removePlayer(Player player) throws MazeServerException {
 		this.removePlayer(player.getId());
 	}
+
+	public void addPlayer(int playerId, int defaultPos) throws MazeServerException {
+		Player player = new Player(playerId);
+		player.setPos(defaultPos);
+		this.addPlayer(player);
+	}	
 	
+	// method
 	public void move(int playerId, EnumDirection direction) throws MazeServerException {
+		if(this.getStatus() != MazeStatus.MAZE_STARTED)
+			throw new MazeServerException("Maze is not started yet");
+
 		int oriPos = this.getPlayerPos(playerId);
 		int newPos = this.getMazeElementId(oriPos, direction);
 
@@ -153,6 +223,10 @@ public class Maze {
 			int earnTreasure = m_maze.get(newPos).enter();
 			// Success, update total treasure left
 			m_leftTreasure -= earnTreasure;			
+			if(m_leftTreasure < 0){
+				// End game
+				this.end();
+			}
 			// update player
 			tmpPlayer.addEarnTreasure(earnTreasure);
 			tmpPlayer.setPos(newPos);
@@ -186,5 +260,9 @@ public class Maze {
 	private Map<Object, Player> m_playerList;	// Player info, <playerid, player>
 	private Map<Object, MazeElement> m_maze;	// All the maze ele, <eleId, ele>, eleId(i,j)=j*m_mazeSize + i;
 
-	private int m_counter		= 0;
+	private int m_counter				= 0;
+	private MazeStatus m_status			= MazeStatus.MAZE_WAITING;	// status
+	private int m_maxPlayerInitTry		= 20;		// max num of try for getting a new pos when join
+	
+	private Runnable m_endGameCallback	= null; 
 }

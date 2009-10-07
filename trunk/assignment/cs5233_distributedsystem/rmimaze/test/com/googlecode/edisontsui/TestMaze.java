@@ -1,7 +1,5 @@
 package com.googlecode.edisontsui;
 
-import java.util.*;
-
 import junit.framework.TestCase;
 
 public class TestMaze extends TestCase {
@@ -15,6 +13,7 @@ public class TestMaze extends TestCase {
 			assertEquals(0, maze.getNumPlayer());
 			assertEquals(m_mazeSize, maze.getMazeSize());
 			assertEquals(m_totalTreasure, maze.getLeftTreasure());
+			assertEquals(MazeStatus.MAZE_WAITING, maze.getStatus());
 		} catch(Exception e) {
 			fail("Exception: ");
 		}
@@ -24,18 +23,26 @@ public class TestMaze extends TestCase {
 		Maze maze = new Maze(m_mazeSize, m_totalTreasure);
 		// add some player
 		try {
-			for(int i =0; i<5; i++) {
-				maze.addPlayer(new Player(m_testPlayerId[i]));
+			for(int i =0; i<2; i++) {
+				maze.addPlayer(m_testPlayerId[i], -1);
 			}
 		} catch (MazeServerException e) {
 			fail("Exception: " + e.getError());
 		}
 		// add duplicated player
 		try {
-			maze.addPlayer(new Player(m_testPlayerId[0]));
+			maze.addPlayer(m_testPlayerId[0], -1);
 			fail("Catch: should be throwing exception");
 		} catch (MazeServerException e) {
 			assertEquals("Player exist", e.getError());
+		}
+		// add player after starting server
+		try {
+			maze.start();
+			maze.addPlayer(m_testPlayerId[3], -1);
+			fail("Catch: should be throwing exception");
+		} catch (MazeServerException e) {
+			assertEquals("Maze is closed for join", e.getError());
 		}
 	}
 
@@ -44,7 +51,7 @@ public class TestMaze extends TestCase {
 		try {
 			// add some player
 			for(int i =0; i<5; i++) {
-				maze.addPlayer(new Player(m_testPlayerId[i]));
+				maze.addPlayer(m_testPlayerId[i], -1);
 			}
 			// remove all player
 			for(int i =0; i<5; i++) {
@@ -74,24 +81,44 @@ public class TestMaze extends TestCase {
 
 	public void testMove() {
 		Maze maze = new Maze(m_mazeSize, m_totalTreasure);
-		Player playerList[] = {};
 		int x = 4;
 		int y = 5;
 		int index;
+		// Move b4 game start - error
 		try {
 			// add some player
 			index = y*m_mazeSize + x;
-			Player player = new Player(m_testPlayerId[0]);
-			player.setPos(index);
-			maze.addPlayer(player);
+			maze.addPlayer(m_testPlayerId[0], index);
 			// Get current location
-			Player tmpPlayer = maze.getPlayer(m_testPlayerId[0]);
+			Maze.Player tmpPlayer = maze.getPlayer(m_testPlayerId[0]);
 			assertEquals(index, tmpPlayer.getPos());
 			// move
 			maze.move(m_testPlayerId[0], EnumDirection.NORTH);
 			assertEquals((y+1)*m_mazeSize+x, tmpPlayer.getPos());
+			fail("Catch: should be throwing exception");
+		} catch (MazeServerException e) {
+			assertEquals("Maze is not started yet", e.getError());
+		}
+		// Proper
+		try {
+			// add some player
+			x = 2;
+			y = 3;
+			index = y*m_mazeSize + x;
+			maze.addPlayer(m_testPlayerId[1], index);
+
+			// start maze
+			maze.start();
+
+			// Get current location
+			Maze.Player tmpPlayer = maze.getPlayer(m_testPlayerId[1]);
+			assertEquals(index, tmpPlayer.getPos());
+			// move
+			maze.move(m_testPlayerId[1], EnumDirection.NORTH);
+			assertEquals((y+1)*m_mazeSize+x, tmpPlayer.getPos());
 			
 		} catch (MazeServerException e) {
+			assertEquals("Player not exist", e.getError());
 			fail("Exception: " + e.getError());
 		}
 	}
@@ -135,33 +162,15 @@ public class TestMaze extends TestCase {
 			assertEquals("New Position out of bound", e.getError());
 		}
 	}
-	
-	public void TestGetPlayer() {
-		int playerId = 10;
-		int playerPos = 34;
-		Player player = new Player(playerId);
-		player.setPos(playerPos);
-		Maze maze = new Maze(m_mazeSize, m_totalTreasure);
-		try {
-			maze.addPlayer(player);
-			Player testPlayer = maze.getPlayer(playerId);
-			assertEquals(player, testPlayer);
-		} catch (MazeServerException e) {
-			fail("Exception: " + e.getError());
-		}
-
-	}
-	
+		
 	public void testGetPlayerPos() {
 		// add a player and get its pos 
 		// check if pos equal
 		int playerId = 10;
 		int playerPos = 34;
-		Player player = new Player(playerId);
-		player.setPos(playerPos);
 		Maze maze = new Maze(m_mazeSize, m_totalTreasure);
 		try {
-			maze.addPlayer(player);
+			maze.addPlayer(playerId, playerPos);
 			int testPlayerPos = maze.getPlayerPos(playerId);
 			assertEquals(playerPos, testPlayerPos);
 		} catch (MazeServerException e) {
@@ -185,6 +194,23 @@ public class TestMaze extends TestCase {
 			fail("Catch: should be throwing exception");
 		} catch (MazeServerException e) {
 			assertEquals("Maze Element is not occupied", e.getError());
+		}
+	}
+	
+	public void testEndGameCallback() {
+		class TestObj implements Runnable {
+			@Override
+			public void run() {
+				System.out.println("callback");				
+			}
+		}
+		Maze maze = new Maze(m_mazeSize, m_totalTreasure);
+		maze.setEndGameCallback(new TestObj());
+		try {
+			maze.start();
+			maze.end();
+		} catch (MazeServerException e) {
+			fail("Exception: "+e.getError());
 		}
 	}
 }
