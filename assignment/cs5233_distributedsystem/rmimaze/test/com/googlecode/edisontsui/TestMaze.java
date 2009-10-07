@@ -199,16 +199,19 @@ public class TestMaze extends TestCase {
 	
 	public void testEndGameCallback() {
 		class TestObj implements Runnable {
+			public int test = 10;
 			@Override
 			public void run() {
-				System.out.println("callback");				
+				test =20;				
 			}
 		}
 		Maze maze = new Maze(m_mazeSize, m_totalTreasure);
-		maze.setEndGameCallback(new TestObj());
+		TestObj testObj = new TestObj();
+		maze.setEndGameCallback(testObj);
 		try {
 			maze.start();
 			maze.end();
+			assertEquals(20, testObj.test);
 		} catch (MazeServerException e) {
 			fail("Exception: "+e.getError());
 		}
