@@ -4,7 +4,7 @@ import junit.framework.TestCase;
 
 public class TestMazeElement extends TestCase {
 	private int m_treasure = 20;
-	
+/*	
 	public void testMazeElement() {
 		try {
 			MazeElement mazeEle = new MazeElement(m_treasure);
@@ -82,5 +82,5 @@ public class TestMazeElement extends TestCase {
 			fail("Excpetion: "+e.getError());
 		}
 	}
-
+*/
 }

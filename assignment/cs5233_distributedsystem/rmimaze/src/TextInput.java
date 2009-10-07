@@ -15,16 +15,17 @@ public class TextInput {
 	
 	public void run() {
 		try {
-			String username = m_console.readLine("Enter your Login name:");
+			String name = m_console.readLine("Enter your Login name:");
 			
-			int playerId = m_client.getGameServer().join(m_client.getListener(), username);
-			
-			//int playerId = m_client.getGameServer().join(new ClientListener(), "edison");
+			int playerId = m_client.getGameServer().join(m_client.getListener(), name);
 			m_client.setPlayerId(playerId);
 			
 			while(m_client.getListener().isTerminated() == false)
 			{
 				char c = (char) System.in.read();
+				if(m_client.getListener().isTerminated()==true)
+					break;
+				
 				switch(c) {
 				case 'w':
 					m_client.getGameServer().move(m_client.getPlayerId(), EnumDirection.NORTH);
@@ -33,10 +34,10 @@ public class TextInput {
 					m_client.getGameServer().move(m_client.getPlayerId(), EnumDirection.SOUTH);
 					break;
 				case 'a':
-					m_client.getGameServer().move(m_client.getPlayerId(), EnumDirection.EAST);
+					m_client.getGameServer().move(m_client.getPlayerId(), EnumDirection.WEST);
 					break;
 				case 'd':
-					m_client.getGameServer().move(m_client.getPlayerId(), EnumDirection.WEST);
+					m_client.getGameServer().move(m_client.getPlayerId(), EnumDirection.EAST);
 					break;
 				default:
 				}

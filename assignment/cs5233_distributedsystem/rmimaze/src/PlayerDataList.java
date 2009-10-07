@@ -58,6 +58,10 @@ public class PlayerDataList {
 	public void removeAll() {
 		m_playerDataList.clear();
 	}
+
+	public int getSize() {
+		return m_playerDataList.size();
+	}
 	
 	public MazeNotifyInterface getNotify(int playerId) throws MazeServerException {
 		MazeNotifyInterface notify = null;
