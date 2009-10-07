@@ -55,6 +55,10 @@ public class PlayerDataList {
 		}
 	}
 	
+	public void removeAll() {
+		m_playerDataList.clear();
+	}
+	
 	public MazeNotifyInterface getNotify(int playerId) throws MazeServerException {
 		MazeNotifyInterface notify = null;
 		// sync block
@@ -70,12 +74,15 @@ public class PlayerDataList {
 		return notify;
 	}
 	
+	public Map<Object, PlayerData> getPlayerDataList() {
+		return m_playerDataList;
+	}
 	// mutex
-	private synchronized void getLock() {
+	public synchronized void getLock() {
 		m_counter++;
 		notifyAll();
 	}
-	private synchronized void releaseLock() {
+	public synchronized void releaseLock() {
 		m_counter--;
 		notifyAll();
 	}

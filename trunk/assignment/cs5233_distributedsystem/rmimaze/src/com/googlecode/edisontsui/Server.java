@@ -1,7 +1,10 @@
 package com.googlecode.edisontsui;
 
+import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -59,19 +62,79 @@ public class Server extends UnicastRemoteObject implements MazeGameInterface {
 	}
 	
 	public void startGame() {
-		//TODO: inform all player
+		//inform all player
+		m_playerList.getLock();
+		try {
+		   Iterator itr = m_playerList.getPlayerDataList().entrySet().iterator();
+		   while (itr.hasNext()) {
+			   Map.Entry pairs = (Map.Entry)itr.next();
+			   PlayerDataList.PlayerData playerData = (PlayerDataList.PlayerData) pairs.getValue();
+			   MazeNotifyInterface notify = playerData.getNotify();
+			   notify.gameStartNotify();
+		   }
+		} catch (RemoteException e) {
+			System.err.println("[StartGame] errMsg:"+e.getMessage());
+		} finally {
+			m_playerList.releaseLock();
+		}
 	}
 	
 	public void endGame() {
-		//TODO:	inform all player
+		//inform all player
+		m_playerList.getLock();
+		try {
+		   Iterator itr = m_playerList.getPlayerDataList().entrySet().iterator();
+		   while (itr.hasNext()) {
+			   Map.Entry pairs = (Map.Entry)itr.next();
+			   PlayerDataList.PlayerData playerData = (PlayerDataList.PlayerData) pairs.getValue();
+			   MazeNotifyInterface notify = playerData.getNotify();
+			   notify.gameEndNotify();
+		   }
+		} catch (RemoteException e) {
+			System.err.println("[EndGame] errMsg:"+e.getMessage());
+		} finally {
+			m_playerList.releaseLock();
+		}
+		m_maze = null;
+		m_playerList.removeAll();
 	}
 	
 	public void checkAlive() {
-		//TODO: check all player (thread)
+		//check all player (thread)
+		//inform all player
+		m_playerList.getLock();
+		int playerId = -1;
+		PlayerDataList.PlayerData playerData;
+		try {
+		   Iterator itr = m_playerList.getPlayerDataList().entrySet().iterator();
+		   while (itr.hasNext()) {
+			   Map.Entry pairs 	= (Map.Entry)itr.next();
+			   playerId 		= (Integer) pairs.getKey();
+			   playerData 		= (PlayerDataList.PlayerData) pairs.getValue();
+			   MazeNotifyInterface notify = playerData.getNotify();
+			   notify.checkAlive();
+		   }
+		} catch (RemoteException e) {
+			System.err.println("[CheckAlive] errMsg:"+e.getMessage());
+			//remove
+			try {
+				if(playerId == -1) {
+					m_maze.removePlayer(playerId);
+					m_playerList.removePlayer(playerId);
+				}
+			} catch (MazeServerException e1) {
+				System.err.println("[CheckAlive] errMsg:"+e1.getMessage());
+			}
+		} catch (Exception e) {
+			System.err.println("[CheckAlive] errMsg:"+e.getMessage());
+		} finally {
+			m_playerList.releaseLock();
+		}	
 	}
 	
 	@Override
 	public synchronized int join(MazeNotifyInterface notify, String name) throws RemoteException {
+		System.out.println("[JOIN] name:"+name);
 		createMaze();
 		// get unique id
 		int playerId = IdGenerator.getNewId();
@@ -89,6 +152,7 @@ public class Server extends UnicastRemoteObject implements MazeGameInterface {
 
 	@Override
 	public void quit(int playerId) throws RemoteException {
+		System.out.println("[QUIT] id:"+playerId);
 		try {
 			MazeNotifyInterface notify = m_playerList.getNotify(playerId);
 			notify.quitNotify("Bye. Thx for playing, see you next time!");
@@ -102,6 +166,7 @@ public class Server extends UnicastRemoteObject implements MazeGameInterface {
 	
 	@Override
 	public void move(int playerId, EnumDirection direction) throws RemoteException {
+		System.out.println("[MOVE] id:"+playerId+" dir:"+direction);
 		MazeNotifyInterface notify = null;
 		try {
 			notify = m_playerList.getNotify(playerId);
@@ -124,6 +189,31 @@ public class Server extends UnicastRemoteObject implements MazeGameInterface {
 	private Maze m_maze 			= null;
 	private PlayerDataList m_playerList = null;
 	
-	private Timer m_timer			= null;
-	
+	private Timer m_timer			= null;	
+
+
+    public static void main(String[] args) {
+    	try {
+    		if(args.length != 3)
+    		{
+    			System.err.println("Usage: java server <mazeSize> <totTreasure> <waitMS>");
+    			System.exit(1);
+    		}
+    		int mazeSize 	= Integer.parseInt(args[0]);
+    		int totTreasure = Integer.parseInt(args[1]);
+    		int waitMS 		= Integer.parseInt(args[2]);
+    		Server server = new Server(mazeSize, totTreasure, waitMS);
+
+    		Naming.rebind("rmimazegame", server);
+
+    	}
+    	catch (java.net.MalformedURLException e) {
+    		System.err.println("Malformed URL for MessageServer name "
+    				+ e.toString());
+    	}
+    	catch (RemoteException e) {
+    		System.err.println("Communication error " + e.toString());
+		}
+    }
+
 }

@@ -29,7 +29,15 @@ public class TestServer extends TestCase {
 	}
 
 	public void testMove() {
-		fail("Not yet implemented");
+		try {
+			Server server = new Server(m_mazeSize, m_totalTreasure, m_waitTimMs);
+			MazeNotifyInterface notify = new ClientListener();
+			int id = server.join(notify, "Test1");
+			server.move(id, EnumDirection.EAST);
+			server.quit(id);
+		} catch (RemoteException e) {
+			fail("Exception:" +e.getMessage());			
+		}	
 	}
 
 	public void testQuit() {
@@ -40,7 +48,7 @@ public class TestServer extends TestCase {
 
 			server.quit(id);
 		} catch (RemoteException e) {
-			
+			fail("Exception:" +e.getMessage());
 		}
 	}
 

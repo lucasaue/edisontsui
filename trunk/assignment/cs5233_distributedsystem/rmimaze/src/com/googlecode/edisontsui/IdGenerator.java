@@ -1,5 +1,6 @@
 package com.googlecode.edisontsui;
 
+
 public class IdGenerator {
 	static private int m_count = 0;
 	
