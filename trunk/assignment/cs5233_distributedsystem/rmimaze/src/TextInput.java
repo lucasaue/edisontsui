@@ -25,17 +25,21 @@ public class TextInput {
 				char c = (char) System.in.read();
 				if(m_client.getListener().isTerminated()==true)
 					break;
-				
+
 				switch(c) {
+				case 72:	// up
 				case 'w':
 					m_client.getGameServer().move(m_client.getPlayerId(), EnumDirection.NORTH);
 					break;
+				case 80:	// down
 				case 's':
 					m_client.getGameServer().move(m_client.getPlayerId(), EnumDirection.SOUTH);
 					break;
+				case 75:	// left
 				case 'a':
 					m_client.getGameServer().move(m_client.getPlayerId(), EnumDirection.WEST);
 					break;
+				case 77:	// right
 				case 'd':
 					m_client.getGameServer().move(m_client.getPlayerId(), EnumDirection.EAST);
 					break;

@@ -26,7 +26,7 @@ public class Server extends UnicastRemoteObject implements MazeGameInterface {
 			m_server.startGame();
 		}
 	}
-	private final class EndGame implements Runnable {
+	private final class EndGame extends  TimerTask {
 		private Server m_server;
 		public EndGame(Server server) {
 			m_server = server;
@@ -75,6 +75,11 @@ public class Server extends UnicastRemoteObject implements MazeGameInterface {
 	}
 	
 	public void startGame() {
+		if(m_maze == null) {
+			System.err.println("[StartGame] Maze is null");
+			return;
+		}
+		
 		System.out.println("[StartGame] starting...");
 
 		try {
@@ -164,7 +169,7 @@ public class Server extends UnicastRemoteObject implements MazeGameInterface {
 		try {
 			m_playerList.addPlayer(playerId, name, notify);
 			m_maze.addPlayer(playerId, -1);
-			notify.joinSuccessNotify("Join Success!! Please wait for the game start");		
+			notify.joinSuccessNotify("Join Success!! Please wait for " + m_serverWaitMS/1000+ "sec for game start");		
 		} catch (MazeServerException e) {
 			notify.joinFailNotify(e.getError());
 			System.err.println("[Join Err] id:"+playerId+", ErrMsg:"+e.getError()+", cleaning up...");
@@ -192,7 +197,7 @@ public class Server extends UnicastRemoteObject implements MazeGameInterface {
 		try {
 			notify = m_playerList.getNotify(playerId);
 			m_maze.move(playerId, direction);
-			notify.moveSuccessNotify("Move Suceess");
+			notify.moveSuccessNotify("[Player_" + playerId + "] Move Suceess");
 			MazeData data = m_maze.getData();
 			//inform self
 			//notify.synchronizeMaze(data);
@@ -209,13 +214,13 @@ public class Server extends UnicastRemoteObject implements MazeGameInterface {
 				   System.out.println("[MOVE] Notify:"+pairs.getKey());
 			   }
 			} catch (RemoteException e) {
-				System.err.println("[StartGame] errMsg:"+e.getMessage());
+				System.err.println("[MOVE_Broadcast] errMsg:"+e.getMessage());
 			} finally {
 				m_playerList.releaseLock();
 			}
 		} catch (MazeServerException e) {
 			if(notify != null)
-				notify.moveFailNotify(e.getError());
+				notify.moveFailNotify("[Player_" + playerId + "] Move Fail:"+e.getError());
 			System.err.println("[Move Err] id:"+playerId+", ErrMsg:"+e.getError());
 		}
 	}
