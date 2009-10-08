@@ -1,5 +1,7 @@
 
 
+import java.util.TimerTask;
+
 import junit.framework.TestCase;
 
 public class TestMaze extends TestCase {
@@ -198,7 +200,7 @@ public class TestMaze extends TestCase {
 	}
 	
 	public void testEndGameCallback() {
-		class TestObj implements Runnable {
+		class TestObj extends TimerTask {
 			public int test = 10;
 			@Override
 			public void run() {

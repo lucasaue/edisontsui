@@ -1,8 +1,7 @@
 
 
-import java.util.HashMap;
-import java.util.Map;
-import java.io.Serializable;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.lang.Math;
 
 // Maze has to store
@@ -18,7 +17,7 @@ public class Maze{
 		m_mazeData 	= new MazeData(size, numTreasure);
 	}
 	
-	public void setEndGameCallback(Runnable endGameCallback) {
+	public void setEndGameCallback(TimerTask endGameCallback) {
 		m_endGameCallback	= endGameCallback;
 	}
 		
@@ -57,9 +56,9 @@ public class Maze{
 		m_mazeData.m_status = MazeStatus.MAZE_END;
 	
 		if(m_endGameCallback != null) {
-			System.out.println("[END] entering callback");
-			m_endGameCallback.run();
-			System.out.println("[END] callback done");			
+			Timer timer = new Timer();
+			//TODO: closing in 2 sec
+			timer.schedule(m_endGameCallback, m_endCallbackWaitMS);
 		}
 	}
 	
@@ -214,8 +213,8 @@ public class Maze{
 
 	// field
 	MazeData m_mazeData 				= null;
-	public int m_counter				= 0;
-	public int m_maxPlayerInitTry		= 20;		// max num of try for getting a new pos when join
-	
-	private Runnable m_endGameCallback	= null; 
+	private int m_counter				= 0;
+	private int m_maxPlayerInitTry		= 20;		// max num of try for getting a new pos when join
+	private int m_endCallbackWaitMS		= 50;
+	private TimerTask m_endGameCallback	= null; 
 }
