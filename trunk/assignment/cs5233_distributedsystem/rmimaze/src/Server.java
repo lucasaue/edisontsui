@@ -2,6 +2,7 @@
 
 import java.rmi.Naming;
 import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Iterator;
 import java.util.Map;
@@ -264,16 +265,14 @@ public class Server extends UnicastRemoteObject implements MazeGameInterface {
     		if(args.length >= 4)
     			server.setCheckAlivePeriod(Integer.parseInt(args[3]));
     		
-    		Naming.rebind("rmimazegame", server);
+    		
+    		LocateRegistry.getRegistry().bind("edisontsui_rmimazegame", server);
     		
     		System.out.println("GameServer started");
 
-    	}
-    	catch (java.net.MalformedURLException e) {
-    		System.err.println("Malformed URL for MessageServer name "
-    				+ e.toString());
-    	}
-    	catch (RemoteException e) {
+    	} catch (RemoteException e) {
+    		System.err.println("Communication error " + e.toString());
+		} catch (Exception e) {
     		System.err.println("Communication error " + e.toString());
 		}
     }
