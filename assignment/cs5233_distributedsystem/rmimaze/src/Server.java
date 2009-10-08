@@ -92,6 +92,10 @@ public class Server extends UnicastRemoteObject implements MazeGameInterface {
 			   PlayerDataList.PlayerData playerData = (PlayerDataList.PlayerData) pairs.getValue();
 			   MazeNotifyInterface notify = playerData.getNotify();
 			   notify.gameStartNotify();
+			   
+			   // sync init maze
+			   MazeData data = m_maze.getData();   
+			   notify.synchronizeMaze(data);
 		   }
 		} catch (RemoteException e) {
 			System.err.println("[StartGame] errMsg:"+e.getMessage());
@@ -190,7 +194,25 @@ public class Server extends UnicastRemoteObject implements MazeGameInterface {
 			m_maze.move(playerId, direction);
 			notify.moveSuccessNotify("Move Suceess");
 			MazeData data = m_maze.getData();
-			notify.synchronizeMaze(data);
+			//inform self
+			//notify.synchronizeMaze(data);
+
+			//inform all player
+			m_playerList.getLock();
+			try {
+			   Iterator itr = m_playerList.getPlayerDataList().entrySet().iterator();
+			   while (itr.hasNext()) {
+				   Map.Entry pairs = (Map.Entry)itr.next();
+				   PlayerDataList.PlayerData playerData = (PlayerDataList.PlayerData) pairs.getValue();
+				   MazeNotifyInterface tmpnotify = playerData.getNotify();
+				   tmpnotify.synchronizeMaze(data);
+				   System.out.println("[MOVE] Notify:"+pairs.getKey());
+			   }
+			} catch (RemoteException e) {
+				System.err.println("[StartGame] errMsg:"+e.getMessage());
+			} finally {
+				m_playerList.releaseLock();
+			}
 		} catch (MazeServerException e) {
 			if(notify != null)
 				notify.moveFailNotify(e.getError());
