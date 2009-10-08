@@ -46,6 +46,8 @@ public class ClientListener extends UnicastRemoteObject implements MazeNotifyInt
 			while (itr.hasNext()) {
 				Map.Entry pairs = (Map.Entry)itr.next();
 				MazeData.Player mazePlayer = (MazeData.Player) pairs.getValue();
+				if(mazePlayer.getId() == m_playerId)
+					System.out.print("Me-");
 				System.out.println("[Player_"+mazePlayer.getId()+"] treasure:"+mazePlayer.getEarnTreasure());
 				if(mazePlayer.getEarnTreasure() > winnerScore) {
 					winnerId = mazePlayer.getId();
@@ -57,7 +59,7 @@ public class ClientListener extends UnicastRemoteObject implements MazeNotifyInt
 			System.out.println("****************************************");
 			System.out.println("WINNER: player_"+winnerId+" Score: "+winnerScore);
 			System.out.println("****************************************");
-			System.out.println("Pass enter to continue~ See you next time");
+			System.out.println("Press enter to continue~ See you next time");
 			m_isTerminated = true;
 		}
 	}
@@ -110,6 +112,10 @@ public class ClientListener extends UnicastRemoteObject implements MazeNotifyInt
 		}
 	}
 	
+	public void setPlayerId(int playerId) {
+		m_playerId = playerId;
+	}
+	private int m_playerId = -1;
 	private boolean m_isTerminated = false;
 	private MazeData m_mazeData = null;
 }

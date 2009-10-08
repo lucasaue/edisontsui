@@ -4,22 +4,26 @@
 import java.rmi.Naming;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 
 
 public class Client {
 	
 	// main
 	public static void main(String[] args) {
-		Client client 	= new Client();
+		Client client 	= new Client(args);
 		TextInput input = new TextInput(client);
 		input.run();
 		
 		System.exit(0);
 	}
 		// ctor
-	public Client() {
+	public Client(String[] args) {
+		String host = (args.length < 1)? null : args[0];
         try {
-            Remote remoteObject = Naming.lookup("rmimazegame");
+        	Registry registry = LocateRegistry.getRegistry(host);
+            Remote remoteObject = registry.lookup("edisontsui_rmimazegame");
 
 			if (remoteObject instanceof MazeGameInterface) {
 				m_gameServer = (MazeGameInterface)remoteObject ;
@@ -47,6 +51,8 @@ public class Client {
 	}
 	public void setPlayerId(int playerId) {
 		m_playerId = playerId;
+		if(m_listener != null)
+			m_listener.setPlayerId(playerId);
 	}
 	public int getPlayerId() {
 		return m_playerId;
