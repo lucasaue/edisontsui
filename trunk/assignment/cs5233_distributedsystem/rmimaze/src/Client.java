@@ -41,11 +41,11 @@ public class Client {
 			}
         }
         catch(RemoteException e) {
-            System.err.println("Remote:RMI Lookup Exception");
+            System.err.println("Remote:RMI Lookup Exception (Cannot locate RMIRegistry Server)");
             System.exit(0);        	
         }
         catch(Exception e){
-            System.err.println("Unknown Exceptio: "+e.getMessage());
+            System.err.println("Fail to connect to server: "+e.getMessage());
             System.exit(0);
         };    
 	}
