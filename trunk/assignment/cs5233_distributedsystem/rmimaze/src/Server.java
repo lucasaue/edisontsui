@@ -94,7 +94,7 @@ public class Server extends UnicastRemoteObject implements MazeGameInterface {
 		System.out.println("[CreateMaze] timer ready");
 	}
 	
-	public synchronized void startGame() {
+	public void startGame() {
 		try {
 			System.out.println("[StartGame] starting...");
 			m_maze.start();
@@ -105,11 +105,11 @@ public class Server extends UnicastRemoteObject implements MazeGameInterface {
 		} catch (MazeServerException e) {
 			System.err.println("[StartGame] errMsg:"+e.getError());
 		} catch (Exception e) {
-			System.err.println("[StartGame] Anormality: "+e.getMessage()+"Possible cause: All player quit before maze start");
+			System.err.println("[StartGame] Anormality: "+e.getMessage()+", Possible cause: All player quit before maze start");
 		}
 	}
 	
-	public synchronized void endGame() {
+	public void endGame() {
 		System.out.println("[ServerEndGame]");
 		//inform all player
 		m_playerList.broadcastGameEndNotify(m_fail);
@@ -178,7 +178,7 @@ public class Server extends UnicastRemoteObject implements MazeGameInterface {
 
 	// critical region are all protected so no need to be sync 
 	// playerList is removed 1st to prevent updating non-exist client
-	public synchronized void removePlayer(int playerId) {
+	public void removePlayer(int playerId) {
 		try {
 			m_playerList.removePlayer(playerId);
 			m_maze.removePlayer(playerId);
