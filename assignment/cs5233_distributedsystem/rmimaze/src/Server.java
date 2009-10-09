@@ -1,22 +1,21 @@
+/**
+ * main server class
+ * 
+ * @author Edison
+ */
 
-
-import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.Iterator;
-import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
 public class Server extends UnicastRemoteObject implements MazeGameInterface {
-	
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -5908230830047850207L;
 
-
+	/**
+	 * Timer Task class as callback for start game
+	 */
 	private final class StartGame extends  TimerTask {
 		private Server m_server;
 		public StartGame(Server server) {
@@ -27,6 +26,9 @@ public class Server extends UnicastRemoteObject implements MazeGameInterface {
 			m_server.startGame();
 		}
 	}
+	/**
+	 * Timer Task class as callback for end game
+	 */
 	private final class EndGame extends  TimerTask {
 		private Server m_server;
 		public EndGame(Server server) {
@@ -37,6 +39,9 @@ public class Server extends UnicastRemoteObject implements MazeGameInterface {
 			m_server.endGame();
 		}
 	}	
+	/** 
+	 * Timer Task class as callback checking client every m_checkAlivePeriod ms
+	 */
 	private final class CheckAlive extends TimerTask {
 		private Server m_server;
 		public CheckAlive(Server server) {
@@ -48,25 +53,39 @@ public class Server extends UnicastRemoteObject implements MazeGameInterface {
 		}
 	}
 	
+	public final class BroadcastFailHandler {
+		private Server m_server;
+		public BroadcastFailHandler(Server server) {
+			m_server = server;
+		}
+		public void run(int playerId) {
+			m_server.removePlayer(playerId);
+		}
+	}
+	
 	// ctor
 	public Server(int mazeSize, int totalTreasure, int serverWaitMS) throws RemoteException {
 		m_mazeSize 		= mazeSize;
 		m_totalTreasure = totalTreasure;
 		m_serverWaitMS	= serverWaitMS;
 		m_playerList 	= new PlayerDataList();
+		m_fail			= new BroadcastFailHandler(this);
 	}
 	
 	public void setCheckAlivePeriod(int checkAlivePeriodMS) {
 		m_checkAlivePeriod = checkAlivePeriodMS;
 	}
-	
+
+	/**
+	 * createMaze (sync protected - as new Maze & Timer)
+	 */
 	public synchronized void createMaze() {
 		if(m_maze != null)
 			return;
 		System.out.println("[CreateMaze] creating maze....");
 		// create new maze and wait for serverWaitMs sec
 		m_maze = new Maze(m_mazeSize, m_totalTreasure);
-		m_maze.setEndGameCallback(new EndGame(this));
+		m_maze.setEndGameCallback(new EndGame(this), m_mazeTerminateWaitMS);
 		System.out.println("[CreateMaze] done. adding timer...");
 		if(m_timer == null)
 			m_timer = new Timer();
@@ -90,24 +109,8 @@ public class Server extends UnicastRemoteObject implements MazeGameInterface {
 		}
 		
 		//inform all player
-		m_playerList.getLock();
-		try {
-		   Iterator itr = m_playerList.getPlayerDataList().entrySet().iterator();
-		   while (itr.hasNext()) {
-			   Map.Entry pairs = (Map.Entry)itr.next();
-			   PlayerDataList.PlayerData playerData = (PlayerDataList.PlayerData) pairs.getValue();
-			   MazeNotifyInterface notify = playerData.getNotify();
-			   notify.gameStartNotify();
-			   
-			   // sync init maze
-			   MazeData data = m_maze.getData();   
-			   notify.synchronizeMaze(data);
-		   }
-		} catch (RemoteException e) {
-			System.err.println("[StartGame] errMsg:"+e.getMessage());
-		} finally {
-			m_playerList.releaseLock();
-		}
+		m_playerList.broadcastGameStartNotify(m_fail);
+		m_playerList.broadcastSynchronizeMaze(m_maze.getData(), m_fail);
 		
 		System.out.println("[StartGame] Success");
 	}
@@ -115,51 +118,18 @@ public class Server extends UnicastRemoteObject implements MazeGameInterface {
 	public void endGame() {
 		System.out.println("[ServerEndGame]");
 		//inform all player
-		m_playerList.getLock();
-		try {
-		   Iterator itr = m_playerList.getPlayerDataList().entrySet().iterator();
-		   while (itr.hasNext()) {
-			   Map.Entry pairs = (Map.Entry)itr.next();
-			   PlayerDataList.PlayerData playerData = (PlayerDataList.PlayerData) pairs.getValue();
-			   MazeNotifyInterface notify = playerData.getNotify();
-			   notify.gameEndNotify();
-		   }
-		} catch (RemoteException e) {
-			System.err.println("[EndGame] errMsg:"+e.getMessage());
-		} finally {
-			m_playerList.releaseLock();
-		}
+		m_playerList.broadcastGameEndNotify(m_fail);
+		// cleanup
 		m_maze = null;
 		m_playerList.removeAll();
 	}
 	
 	public void checkAlive() {
-		//check all player (thread)
 		//inform all player
-		m_playerList.getLock();
-		int playerId = -1;
-		PlayerDataList.PlayerData playerData;
-		try {
-		   Iterator itr = m_playerList.getPlayerDataList().entrySet().iterator();
-		   while (itr.hasNext()) {
-			   Map.Entry pairs 	= (Map.Entry)itr.next();
-			   playerId 		= (Integer) pairs.getKey();
-			   playerData 		= (PlayerDataList.PlayerData) pairs.getValue();
-			   MazeNotifyInterface notify = playerData.getNotify();
-			   notify.checkAlive();
-		   }
-		} catch (RemoteException e) {
-			System.err.println("[CheckAlive] errMsg:"+e.getMessage());
-			//remove
-			if(playerId != -1)
-				this.removePlayer(playerId);
-		} catch (Exception e) {
-			System.err.println("[CheckAlive] errMsg:"+e.getMessage());
-		} finally {
-			m_playerList.releaseLock();
-		}	
+		m_playerList.broadcastCheckAlive(m_fail);
 	}
 	
+	// critical region are all protected so no need to be sync 
 	public int join(MazeNotifyInterface notify, String name) throws RemoteException {
 		System.out.println("[JOIN] name:"+name);
 		
@@ -180,6 +150,7 @@ public class Server extends UnicastRemoteObject implements MazeGameInterface {
 		return playerId;
 	}
 
+	// critical region are all protected so no need to be sync 
 	public void quit(int playerId) throws RemoteException {
 		System.out.println("[QUIT] id:"+playerId);
 		try {
@@ -191,8 +162,10 @@ public class Server extends UnicastRemoteObject implements MazeGameInterface {
 		}
 	}
 
-	
-	public void move(int playerId, EnumDirection direction) throws RemoteException {
+	/**
+	 * (sync protected) prevent sync mismatch mazeData
+	 */
+	public synchronized void move(int playerId, EnumDirection direction) throws RemoteException {
 		System.out.println("[MOVE] id:"+playerId+" dir:"+direction);
 		MazeNotifyInterface notify = null;
 		try {
@@ -200,25 +173,8 @@ public class Server extends UnicastRemoteObject implements MazeGameInterface {
 			m_maze.move(playerId, direction);
 			notify.moveSuccessNotify("[Player_" + playerId + "] Move Suceess");
 			MazeData data = m_maze.getData();
-			//inform self
-			//notify.synchronizeMaze(data);
-
 			//inform all player
-			m_playerList.getLock();
-			try {
-			   Iterator itr = m_playerList.getPlayerDataList().entrySet().iterator();
-			   while (itr.hasNext()) {
-				   Map.Entry pairs = (Map.Entry)itr.next();
-				   PlayerDataList.PlayerData playerData = (PlayerDataList.PlayerData) pairs.getValue();
-				   MazeNotifyInterface tmpnotify = playerData.getNotify();
-				   tmpnotify.synchronizeMaze(data);
-				   System.out.println("[MOVE] Notify:"+pairs.getKey());
-			   }
-			} catch (RemoteException e) {
-				System.err.println("[MOVE_Broadcast] errMsg:"+e.getMessage());
-			} finally {
-				m_playerList.releaseLock();
-			}
+			m_playerList.broadcastSynchronizeMaze(m_maze.getData(), m_fail);
 		} catch (MazeServerException e) {
 			if(notify != null)
 				notify.moveFailNotify("[Player_" + playerId + "] Move Fail:"+e.getError());
@@ -226,6 +182,8 @@ public class Server extends UnicastRemoteObject implements MazeGameInterface {
 		}
 	}
 
+	// critical region are all protected so no need to be sync 
+	// playerList is removed 1st to prevent updating non-exist client
 	public void removePlayer(int playerId) {
 		try {
 			m_playerList.removePlayer(playerId);
@@ -240,16 +198,23 @@ public class Server extends UnicastRemoteObject implements MazeGameInterface {
 	}
 	
 	// field
-	private int m_checkAlivePeriod 	= 5000;			// 5s
-	private int m_serverWaitMS		= 10000;		// 10s
-	private int m_mazeSize 			= 0;
-	private int m_totalTreasure		= 0;
-	private Maze m_maze 			= null;
+	private int m_mazeTerminateWaitMS	= 50;			// 0.01s
+	private int m_checkAlivePeriod 		= 5000;			// 5s
+	private int m_serverWaitMS			= 10000;		// 10s
+
+	private int m_mazeSize 				= 0;
+	private int m_totalTreasure			= 0;
+	
+	private Maze m_maze 				= null;
 	private PlayerDataList m_playerList = null;
 	
-	private Timer m_timer			= null;	
+	private Timer m_timer				= null;	
+	private BroadcastFailHandler m_fail	= null;
 
-
+	/**
+	 * main func
+	 * @param args
+	 */
     public static void main(String[] args) {
     	try {
     		if(args.length < 3)

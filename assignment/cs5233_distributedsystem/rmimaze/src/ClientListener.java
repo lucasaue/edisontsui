@@ -1,4 +1,16 @@
-
+/**
+ * ClientListener
+ * i) 	Handle server callback
+ * ii)	Display to standard out
+ * 
+ * Print format is sth like
+ * | | | | |
+ * |X| |$| |
+ * | | | | |
+ * where x denote player and $ denote treasure 
+ * 
+ * @author Edison (edisontsui@gmail.com)
+ */
 
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
@@ -8,9 +20,11 @@ import java.util.Map;
 public class ClientListener extends UnicastRemoteObject implements MazeNotifyInterface {
 	private static final long serialVersionUID = -7204060028020671154L;
 
-	protected ClientListener() throws RemoteException {
+	// ctor
+	public ClientListener() throws RemoteException {
 	}
 	
+	// Method inherited from MazeNotifyInterface
 	public void joinSuccessNotify(String msg) throws RemoteException {
 		System.out.println(msg);
 	}
@@ -42,16 +56,17 @@ public class ClientListener extends UnicastRemoteObject implements MazeNotifyInt
 		System.out.println("========================================");
 		System.out.println("=======++++++++ GAME END +++++++========");
 		try {
-			Iterator itr = m_mazeData.m_playerList.entrySet().iterator();
-			while (itr.hasNext()) {
-				Map.Entry pairs = (Map.Entry)itr.next();
-				MazeData.Player mazePlayer = (MazeData.Player) pairs.getValue();
-				if(mazePlayer.getId() == m_playerId)
+			m_mazeData.resetPlayerItr();
+			MazeData.Player player = null;
+			while( (player=m_mazeData.getNextPlayer()) != null)
+			{
+				if(player.getId() == m_playerId)
 					System.out.print("Me-");
-				System.out.println("[Player_"+mazePlayer.getId()+"] treasure:"+mazePlayer.getEarnTreasure());
-				if(mazePlayer.getEarnTreasure() > winnerScore) {
-					winnerId = mazePlayer.getId();
-					winnerScore = mazePlayer.getEarnTreasure();
+				
+				System.out.println("[Player_"+player.getId()+"] treasure:"+player.getEarnTreasure());
+				if(player.getEarnTreasure() > winnerScore) {
+					winnerId = player.getId();
+					winnerScore = player.getEarnTreasure();
 				}
 			}
 		} catch (Exception e) {
@@ -76,46 +91,53 @@ public class ClientListener extends UnicastRemoteObject implements MazeNotifyInt
 		printMaze();
 	}
 
+	// Helper function
+	// Check if Game is terminated
 	public boolean isTerminated() {
 		return m_isTerminated;
 	}
-	// helper
+	
+	// Print Maze - take m_maze and print info to standard out
 	private void printMaze() {
 		if(m_mazeData == null)
 			return;
-		System.out.println("Treasure Left:"+ m_mazeData.m_leftTreasure);
-		
+		System.out.println("Treasure Left:"+ m_mazeData.getLeftTreasure());
+
 		try {
-		   Iterator itr = m_mazeData.m_playerList.entrySet().iterator();
-		   while (itr.hasNext()) {
-			   Map.Entry pairs = (Map.Entry)itr.next();
-			   MazeData.Player mazePlayer = (MazeData.Player) pairs.getValue();
-			   System.out.println("[Player_"+mazePlayer.getId()+"] treasure:"+mazePlayer.getEarnTreasure());
-		   }
-		} catch (Exception e) {
-		} 
-		
-		int size = m_mazeData.getMazeSize();
-		for(int y=0;y<size;++y) {
-			for(int x=0;x<size;++x) {
-				int pos = y*size+x;
-				System.out.print("|");
-				if(m_mazeData.isMazeElementOccupied(pos) == true) {
-					System.out.print("X");
-				} else if (m_mazeData.enquireMazeElementTreasure(pos)!= 0){
-					System.out.print("$");
-				} else {
-					System.out.print(" ");
-				}
+			m_mazeData.resetPlayerItr();
+			MazeData.Player player = null;
+			while ( (player=m_mazeData.getNextPlayer()) != null ) {
+				System.out.println("[Player_"+player.getId()+"] treasure:"+player.getEarnTreasure());
 			}
-			System.out.print("|\n");
-		}
+
+			System.out.println("X -player, $ -treasure");
+
+			int size = m_mazeData.getMazeSize();
+			for(int y=0;y<size;++y) {
+				for(int x=0;x<size;++x) {
+					int pos = y*size+x;
+					System.out.print("|");
+					if(m_mazeData.getMazeElement(pos).isOccupied() == true) {
+						System.out.print("X");
+					} else if (m_mazeData.getMazeElement(pos).getTreasure() != 0){
+						System.out.print("$");
+					} else {
+						System.out.print(" ");
+					}
+				}
+				System.out.print("|\n");
+			}
+		} catch (MazeServerException e) {
+			System.err.println("[PRINT_MAZE] err:"+e.getError());
+		} 
 	}
 	
 	public void setPlayerId(int playerId) {
 		m_playerId = playerId;
 	}
-	private int m_playerId = -1;
-	private boolean m_isTerminated = false;
-	private MazeData m_mazeData = null;
+	
+	// field
+	private int m_playerId 			= -1;
+	private boolean m_isTerminated 	= false;
+	private MazeData m_mazeData 	= null;
 }

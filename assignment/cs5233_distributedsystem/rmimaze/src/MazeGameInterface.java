@@ -1,4 +1,8 @@
-
+/**
+ * Interface for maze game server
+ * 
+ * @author Edison (edisontsui@gmail.com)
+ */
 import java.rmi.*;
 
 public interface MazeGameInterface extends Remote {

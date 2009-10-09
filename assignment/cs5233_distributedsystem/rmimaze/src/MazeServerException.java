@@ -1,4 +1,9 @@
-
+/**
+ * Exception class
+ * All error msg can be get by getError()
+ * 
+ * @author Edison (edisontsui@gmail.com)
+ */
 
 public class MazeServerException extends Exception {
 	// ctor

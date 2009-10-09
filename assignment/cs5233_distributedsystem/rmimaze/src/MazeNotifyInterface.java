@@ -1,4 +1,8 @@
-
+/**
+ * Interface for MazeGame client
+ * 
+ * @author Edison(edisontsui@gmail.com)
+ */
 import java.rmi.*;
 
 public interface MazeNotifyInterface extends Remote {
@@ -15,7 +19,6 @@ public interface MazeNotifyInterface extends Remote {
 	
 	public void gameEndNotify() throws RemoteException;
 	
-	// What if client fail? exception? timeout?
 	public void checkAlive() throws RemoteException;
 	
 	public void synchronizeMaze(MazeData mazeData) throws RemoteException;
