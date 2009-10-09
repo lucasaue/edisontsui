@@ -1,7 +1,14 @@
+/**
+ * Maze Game client main class
+ * i)  locate RMIregistry host
+ * ii) Text Input (TextInput.java) /output (ClientListener.java)
+ * 
+ * Usage: java Client hostname
+ * 
+ * @author Edison (edisontsui@gmail.com)
+ */
 
 
-
-import java.rmi.Naming;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -18,7 +25,7 @@ public class Client {
 		
 		System.exit(0);
 	}
-		// ctor
+	// ctor
 	public Client(String[] args) {
 		String host = (args.length < 1)? null : args[0];
         try {
@@ -29,7 +36,7 @@ public class Client {
 				m_gameServer = (MazeGameInterface)remoteObject ;
 				m_listener = new ClientListener();
 			} else {
-				System.err.println("Server not a Maze Game Server.");
+				System.err.println("Maze Game Server NOT found");
 				System.exit(0);
 			}
         }
@@ -38,7 +45,7 @@ public class Client {
             System.exit(0);        	
         }
         catch(Exception e){
-            System.err.println("Normal:RMI Lookup Exception");
+            System.err.println("Unknown Exceptio: "+e.getMessage());
             System.exit(0);
         };    
 	}

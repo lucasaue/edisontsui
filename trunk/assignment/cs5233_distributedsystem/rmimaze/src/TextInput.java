@@ -1,7 +1,10 @@
-
+/**
+ * Input 
+ * 
+ * @author Edison
+ */
 
 import java.io.Console;
-
 
 public class TextInput {
 	public TextInput(Client client) {
