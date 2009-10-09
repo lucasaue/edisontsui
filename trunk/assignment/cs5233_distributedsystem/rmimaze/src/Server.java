@@ -94,28 +94,22 @@ public class Server extends UnicastRemoteObject implements MazeGameInterface {
 		System.out.println("[CreateMaze] timer ready");
 	}
 	
-	public void startGame() {
-		if(m_maze == null) {
-			System.err.println("[StartGame] Maze is null");
-			return;
-		}
-		
-		System.out.println("[StartGame] starting...");
-
+	public synchronized void startGame() {
 		try {
+			System.out.println("[StartGame] starting...");
 			m_maze.start();
+			//inform all player
+			m_playerList.broadcastGameStartNotify(m_fail);
+			m_playerList.broadcastSynchronizeMaze(m_maze.getData(), m_fail);
+			System.out.println("[StartGame] Success");
 		} catch (MazeServerException e) {
 			System.err.println("[StartGame] errMsg:"+e.getError());
+		} catch (Exception e) {
+			System.err.println("[StartGame] Anormality: "+e.getMessage()+"Possible cause: All player quit before maze start");
 		}
-		
-		//inform all player
-		m_playerList.broadcastGameStartNotify(m_fail);
-		m_playerList.broadcastSynchronizeMaze(m_maze.getData(), m_fail);
-		
-		System.out.println("[StartGame] Success");
 	}
 	
-	public void endGame() {
+	public synchronized void endGame() {
 		System.out.println("[ServerEndGame]");
 		//inform all player
 		m_playerList.broadcastGameEndNotify(m_fail);
@@ -184,7 +178,7 @@ public class Server extends UnicastRemoteObject implements MazeGameInterface {
 
 	// critical region are all protected so no need to be sync 
 	// playerList is removed 1st to prevent updating non-exist client
-	public void removePlayer(int playerId) {
+	public synchronized void removePlayer(int playerId) {
 		try {
 			m_playerList.removePlayer(playerId);
 			m_maze.removePlayer(playerId);
