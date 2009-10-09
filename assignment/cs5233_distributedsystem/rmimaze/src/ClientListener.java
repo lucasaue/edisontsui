@@ -63,7 +63,7 @@ public class ClientListener extends UnicastRemoteObject implements MazeNotifyInt
 				if(player.getId() == m_playerId)
 					System.out.print("Me-");
 				
-				System.out.println("[Player_"+player.getId()+"] treasure:"+player.getEarnTreasure());
+				System.out.println("[Player_"+player.getId()+"] treasure:"+player.getEarnTreasure()+"/"+m_mazeData.getTotalTreasure());
 				if(player.getEarnTreasure() > winnerScore) {
 					winnerId = player.getId();
 					winnerScore = player.getEarnTreasure();

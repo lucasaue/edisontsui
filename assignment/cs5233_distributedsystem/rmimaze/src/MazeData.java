@@ -166,6 +166,10 @@ public class MazeData implements Serializable {
 		return m_leftTreasure;
 	}
 	
+	public int getTotalTreasure() {
+		return m_totalTreasure;
+	}
+	
 	public int getNumPlayer(){
 		return m_playerList.size();
 	}
