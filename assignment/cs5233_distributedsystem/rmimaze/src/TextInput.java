@@ -6,7 +6,7 @@
 
 import java.io.Console;
 
-public class TextInput {
+public class TextInput implements ClientInput {
 	public TextInput(Client client) {
 		m_console = System.console();
 		if( m_console == null ) {

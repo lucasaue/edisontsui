@@ -100,8 +100,7 @@ public class Server extends UnicastRemoteObject implements MazeGameInterface {
 			m_maze.start();
 			//inform all player
 			m_playerList.broadcastGameStartNotify(m_fail);
-			MazeData mazeData = m_maze.getData(); 
-			m_playerList.broadcastSynchronizeMaze(mazeData, m_fail);
+			m_playerList.broadcastSynchronizeMaze(m_maze.getData(), m_fail);
 			System.out.println("[StartGame] Success");
 		} catch (MazeServerException e) {
 			System.err.println("[StartGame] errMsg:"+e.getError());
@@ -167,9 +166,8 @@ public class Server extends UnicastRemoteObject implements MazeGameInterface {
 			notify = m_playerList.getNotify(playerId);
 			m_maze.move(playerId, direction);
 			notify.moveSuccessNotify("[Player_" + playerId + "] Move Suceess");
-			MazeData data = m_maze.getData();
 			//inform all player
-			m_playerList.broadcastSynchronizeMaze(data, m_fail);
+			m_playerList.broadcastSynchronizeMaze(m_maze.getData(), m_fail);
 		} catch (MazeServerException e) {
 			if(notify != null)
 				notify.moveFailNotify("[Player_" + playerId + "] Move Fail:"+e.getError());
@@ -212,21 +210,22 @@ public class Server extends UnicastRemoteObject implements MazeGameInterface {
 	 */
     public static void main(String[] args) {
     	try {
-    		if(args.length < 3)
+    		if(args.length < 4)
     		{
-    			System.err.println("Usage: java server <mazeSize> <totTreasure> <waitMS>");
+    			System.err.println("Usage: java server <rmiName> <mazeSize> <totTreasure> <waitMS>");
     			System.exit(1);
     		}
-    		int mazeSize 	= Integer.parseInt(args[0]);
-    		int totTreasure = Integer.parseInt(args[1]);
-    		int waitMS 		= Integer.parseInt(args[2]);
+    		String rmiName	= args[0];
+    		int mazeSize 	= Integer.parseInt(args[1]);
+    		int totTreasure = Integer.parseInt(args[2]);
+    		int waitMS 		= Integer.parseInt(args[3]);
     		Server server = new Server(mazeSize, totTreasure, waitMS);
 
-    		if(args.length >= 4)
-    			server.setCheckAlivePeriod(Integer.parseInt(args[3]));
+    		if(args.length >= 5)
+    			server.setCheckAlivePeriod(Integer.parseInt(args[4]));
     		
     		
-    		LocateRegistry.getRegistry().bind("edisontsui_rmimazegame", server);
+    		LocateRegistry.getRegistry().bind(rmiName, server);
     		
     		System.out.println("GameServer started");
 

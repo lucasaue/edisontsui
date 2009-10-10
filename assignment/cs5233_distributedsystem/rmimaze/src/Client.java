@@ -19,18 +19,30 @@ public class Client {
 	
 	// main
 	public static void main(String[] args) {
-		Client client 	= new Client(args);
-		TextInput input = new TextInput(client);
+		if(args.length < 1){
+			System.err.println("Usage: java Client <rmiName> <host(optional)> <isRobot(ms)(optional)>");
+			System.exit(1);
+		}
+		String rmiName	= args[0];
+		String host 	= null;
+		boolean	isRobot	= false;
+		if(args.length >= 2) {
+			host 	= args[1];
+		}
+		if(args.length >= 3) {
+			isRobot	= true;
+		}
+		Client client 		= new Client(rmiName, host);
+		ClientInput input 	= (isRobot == true)? new RobotInput(client, Integer.parseInt(args[2])):new TextInput(client);
 		input.run();
 		
 		System.exit(0);
 	}
 	// ctor
-	public Client(String[] args) {
-		String host = (args.length < 1)? null : args[0];
+	public Client(String rmiName, String host) {
         try {
         	Registry registry = LocateRegistry.getRegistry(host);
-            Remote remoteObject = registry.lookup("edisontsui_rmimazegame");
+            Remote remoteObject = registry.lookup(rmiName);
 
 			if (remoteObject instanceof MazeGameInterface) {
 				m_gameServer = (MazeGameInterface)remoteObject ;
