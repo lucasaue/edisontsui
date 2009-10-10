@@ -100,7 +100,8 @@ public class Server extends UnicastRemoteObject implements MazeGameInterface {
 			m_maze.start();
 			//inform all player
 			m_playerList.broadcastGameStartNotify(m_fail);
-			m_playerList.broadcastSynchronizeMaze(m_maze.getData(), m_fail);
+			MazeData mazeData = m_maze.getData(); 
+			m_playerList.broadcastSynchronizeMaze(mazeData, m_fail);
 			System.out.println("[StartGame] Success");
 		} catch (MazeServerException e) {
 			System.err.println("[StartGame] errMsg:"+e.getError());
@@ -168,7 +169,7 @@ public class Server extends UnicastRemoteObject implements MazeGameInterface {
 			notify.moveSuccessNotify("[Player_" + playerId + "] Move Suceess");
 			MazeData data = m_maze.getData();
 			//inform all player
-			m_playerList.broadcastSynchronizeMaze(m_maze.getData(), m_fail);
+			m_playerList.broadcastSynchronizeMaze(data, m_fail);
 		} catch (MazeServerException e) {
 			if(notify != null)
 				notify.moveFailNotify("[Player_" + playerId + "] Move Fail:"+e.getError());
