@@ -26,12 +26,22 @@ if {$argc >= 3} {
 if {$argc >= 4} {
 	set wait [lindex $argv 4]
 } else {
-	set wait 1
+	set wait TRUE
+}
+if {$argc >= 5} {
+	set gentle [lindex $argv 5]
+} else {
+	set gentle FALSE
+}
+if {$argc >=6} {
+	set geometric [lindex $argv 6]
+} else {
+	set geometric FALSE
 }
 
 set queuetype RED
 #set maxthresh [expr $minthresh * 3]
-puts "minthresh $minthresh maxthresh $maxthresh q_weight $q_weight"
+puts "minthresh $minthresh maxthresh $maxthresh q_weight $q_weight wait $wait geometric $geometric"
 set BuffSize 140
 Queue/RED set linterm_ 50 
 Queue/RED set thresh_ $minthresh
@@ -39,6 +49,11 @@ Queue/RED set maxthresh_ $maxthresh
 Queue/RED set limit_ $BuffSize 
 Queue/RED set q_weight_ $q_weight
 Queue/RED set wait_ $wait
+Queue/RED set gentle_ $gentle
+if {$argc >=6} {
+	Queue/RED set geometric_ $geometric
+}
+
 init $seed $BuffSize
 topo
 make_traffic
