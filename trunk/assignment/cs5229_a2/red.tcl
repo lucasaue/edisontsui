@@ -12,8 +12,22 @@ source common.tcl
 
 set minthresh [lindex $argv 0]
 set seed  [lindex $argv 1]
-set maxthresh [lindex $argv 2]
-set q_weight [lindex $argv 3]
+
+if {$argc >= 2} {
+	set maxthresh [lindex $argv 2]
+} else {
+	set maxthresh [expr $minthresh * 3]
+}
+if {$argc >= 3} {
+ 	set q_weight [lindex $argv 3]
+} else {
+	set q_weight 0
+}
+if {$argc >= 4} {
+	set wait [lindex $argv 4]
+} else {
+	set wait 1
+}
 
 set queuetype RED
 #set maxthresh [expr $minthresh * 3]
@@ -24,6 +38,7 @@ Queue/RED set thresh_ $minthresh
 Queue/RED set maxthresh_ $maxthresh
 Queue/RED set limit_ $BuffSize 
 Queue/RED set q_weight_ $q_weight
+Queue/RED set wait_ $wait
 init $seed $BuffSize
 topo
 make_traffic
